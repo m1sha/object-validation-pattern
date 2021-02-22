@@ -1,16 +1,16 @@
-import { ObjectValidator, RulesBuilder, StateObject } from "../src/index"
+import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
 
 class TestDTO {
     name: string
     value: number
-    values: string[]
-    inner: TestDTO
+    // values: string[]
+    // inner: TestDTO
 
-    constructor(){
+    constructor() {
         this.name = ""
         this.value = 0
-        this.values = []
-        this.inner = null
+        //  this.values = []
+        // this.inner = null
     }
 }
 
@@ -19,9 +19,9 @@ class TestObjectValidator extends ObjectValidator<TestDTO> {
         rules
             .add("name")
             .string()
-            .notEmpty()
-            .breakChain()
-            .maxLength(10)
+            .notEmpty().breakChain()
+            //.maxLength(10)
+            .check(p=>p.name.length<50, "length")
 
         rules
             .add("value")
@@ -33,10 +33,10 @@ class TestObjectValidator extends ObjectValidator<TestDTO> {
         //     .array()
         //     .forElement(p => p.string().maxLength(12))
 
-        rules
-            .add("inner")
-            .entity()
-            .use(TestObjectValidator)
+        // rules
+        //     .add("inner")
+        //     .entity()
+        //     .use(TestObjectValidator)
     }
 
     protected createState(): StateObject {
@@ -49,8 +49,18 @@ test("validator test", () => {
     entity.name = null
     entity.value = 5
     const validator = new TestObjectValidator()
-    var result = validator.validate(entity)
+    const result = validator.validate(entity)
     expect(result["name"]).toEqual({ valid: false, text: "name: is empty" })
     expect(result["value"]).toEqual({ valid: true, text: "" })
     expect(result.isValid).toBeFalsy()
+})
+
+test("validator test good", () => {
+    const entity = new TestDTO()
+    entity.name = "dd222"
+    entity.value = 5
+    const validator = new TestObjectValidator()
+    const result = validator.validate(entity)
+   
+    expect(result.isValid).toBeTruthy()
 })

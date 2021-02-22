@@ -1,22 +1,22 @@
-interface IValidator {
-    readonly item: unknown
-    readonly stack: RuleStack
+interface IStackItem {
+    readonly key: string
 }
 
 class RuleStack {
     readonly items: IStackItem[]
 
-    constructor(){
+    constructor() {
         this.items = []
     }
 
-    push(item: IStackItem){
+    push(item: IStackItem) { 
         this.items.push(item)
     }
 }
 
-interface IStackItem {
-    readonly key: string
+interface IValidator {
+    readonly item: unknown
+    readonly stack: RuleStack
 }
 
 type RuleStackOperationCallback = () => boolean
@@ -27,16 +27,17 @@ class RuleStackItem implements IStackItem {
     readonly key: string
     readonly message: string
 
-    constructor(key: string, callback: RuleStackOperationCallback, message: string){
-        this.key = key
-        this.callback = callback
-        this.message = message
+    constructor(key: string, callback: RuleStackOperationCallback, message: string) {
+      this.key = key
+      this.callback = callback
+      this.message = message
     }
 
-    get result(): boolean{
-        if (this._result === undefined || typeof this._result === "undefined"){
+    get result(): boolean {
+        if (this._result === undefined || typeof this._result === "undefined") {
             this._result = this.callback()
         }
+
         return this._result
     }
 }
@@ -44,19 +45,14 @@ class RuleStackItem implements IStackItem {
 class BlockStackItem implements IStackItem {
     readonly isBlock: boolean
     readonly key: string
-    constructor(key: string, block: boolean){
+
+    constructor(key: string, block: boolean) {
         this.key = key
         this.isBlock = block
     }
 }
   
 export abstract class ObjectValidator<T> {
-    //readonly state: StateObject
-  
-    constructor(){
-       // this.state = this.createState()
-    }
-
     protected abstract setRules(rules: RulesBuilder<T>): void
     protected abstract createState(): StateObject
     
@@ -64,14 +60,10 @@ export abstract class ObjectValidator<T> {
        return this._validate(item)
     }
   
-    validateField<K extends keyof T>(item: T, fieldName: K){
-        this._validate(item, p => p === fieldName)
+    validateField<K extends keyof T>(item: T, fieldName: K): StateObject{
+        return this._validate(item, p => p === fieldName)
     }
   
-    // protected addState(itemName: string){
-    //     StateReflector.createProperty(this.state, itemName)
-    // }
-
     private _validate(item: T, callback?: ValidateFieldCallback): StateObject{
         const state = this.createState()
         
@@ -138,7 +130,7 @@ class StateReflector {
         writable: true,
         enumerable: true,
         configurable: true
-      });
+      })
     }
 }
   
@@ -147,24 +139,24 @@ export class StateItem{
     text: string;
   
     constructor(){
-      this.valid = false;
-      this.text = '';
+      this.valid = false
+      this.text = ''
     }
   
     setValue(valid: Boolean, text: string){
-      this.valid = valid;
-      this.text = text;
+      this.valid = valid
+      this.text = text
     }
 }
   
 export class StateObject{
     clear(){
       for (const key in this){
-        const item = this[key];
+        const item = this[key]
         if (!(item as Object).hasOwnProperty("valid"))
-          continue;
-        item["valid"] = undefined;
-        item["text"] = '';
+          continue
+        item["valid"] = undefined
+        item["text"] = ''
       }
     }
     
@@ -183,13 +175,20 @@ export class StateObject{
     }
 }
 
-abstract class FieldValidationBuilder<K> {
+export type FieldValidationCallback<T> = (obj: T)=> boolean;
+abstract class FieldValidationBuilder<T, K> {
     protected readonly field:  K
     protected readonly validator: IValidator
 
     constructor(field: K, validator: IValidator){
         this.field = field
         this.validator = validator
+    }
+
+    check(action: FieldValidationCallback<T>, message: string): this {
+        const { item, stack } = this.validator
+        stack.push(new RuleStackItem(this.field.toString(), () => action(item as T), message))
+        return this
     }
 
     null(message?: string): this{
@@ -212,7 +211,7 @@ abstract class FieldValidationBuilder<K> {
 }
 
 
-class StringFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
+class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
     constructor(field: K, validator: IValidator){
        super(field, validator)
     }
@@ -233,7 +232,7 @@ class StringFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
 
 }
 
-class NumberFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
+class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
     constructor(field: K, validator: IValidator){
         super(field, validator)
     }
@@ -246,18 +245,18 @@ class NumberFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
     }
 }
 
-export type ForElementCallback<K> = (caseTypes: CaseTypes<K>) => void
-class ArrayFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
+export type ForElementCallback<T, K> = (caseTypes: CaseTypes<T, K>) => void
+class ArrayFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
     constructor(field: K, validator: IValidator){
         super(field, validator)
     }
 
-    forElement(callback: ForElementCallback<K>){
-        callback(new CaseTypes<K>(this.field, this.validator))
+    forElement(callback: ForElementCallback<T, K>){
+        callback(new CaseTypes<T, K>(this.field, this.validator))
     }
 }
 
-class EntityFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
+class EntityFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
     constructor(field: K, validator: IValidator){
         super(field, validator)
     }
@@ -268,7 +267,7 @@ class EntityFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
 }
 
 
-export class CaseTypes<K> {
+export class CaseTypes<T, K> {
     private readonly field:  K
     private validator: IValidator
     constructor(field: K, validator: IValidator){
@@ -277,19 +276,19 @@ export class CaseTypes<K> {
     }
 
     string(){
-        return new StringFieldValidationBuilder(this.field, this.validator)
+        return new StringFieldValidationBuilder<T, K>(this.field, this.validator)
     }
 
     number(){
-        return new NumberFieldValidationBuilder(this.field, this.validator)
+        return new NumberFieldValidationBuilder<T, K>(this.field, this.validator)
     }
 
     array() {
-        return new ArrayFieldValidationBuilder(this.field, this.validator)
+        return new ArrayFieldValidationBuilder<T, K>(this.field, this.validator)
     }
 
     entity(){
-        return new EntityFieldValidationBuilder(this.field, this.validator)
+        return new EntityFieldValidationBuilder<T, K>(this.field, this.validator)
     }
 }
 
@@ -299,8 +298,8 @@ export class RulesBuilder<T>{
         this.validator = validator
     }
 
-    add<K extends keyof T>(fieldName: K): CaseTypes<K>{
-        return new CaseTypes<K>(fieldName, this.validator)
+    add<K extends keyof T>(fieldName: K): CaseTypes<T, K>{
+        return new CaseTypes<T, K>(fieldName, this.validator)
     }
 
 }

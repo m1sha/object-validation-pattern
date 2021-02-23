@@ -18,16 +18,16 @@ class TestObjectValidator extends ObjectValidator<TestDTO> {
     protected setRules(rules: RulesBuilder<TestDTO>): void {
         rules
             .add("name")
-            .string()
+            .isString()
             .notEmpty().breakChain()
-            //.maxLength(10)
+            // .maxLength(10)
             .check(p=>p.name.length<50, "length")
 
         rules
             .add("value")
-            .number()            
+            .isNumber()
             .range(5, 10)
-        
+
         // rules
         //     .add("values")
         //     .array()
@@ -50,8 +50,8 @@ test("validator test", () => {
     entity.value = 5
     const validator = new TestObjectValidator()
     const result = validator.validate(entity)
-    expect(result["name"]).toEqual({ valid: false, text: "name: is empty" })
-    expect(result["value"]).toEqual({ valid: true, text: "" })
+    expect(result.getValue("name")).toEqual({ valid: false, text: "name: is empty" })
+    expect(result.getValue("value")).toEqual({ valid: true, text: "" })
     expect(result.isValid).toBeFalsy()
 })
 
@@ -61,6 +61,5 @@ test("validator test good", () => {
     entity.value = 5
     const validator = new TestObjectValidator()
     const result = validator.validate(entity)
-   
     expect(result.isValid).toBeTruthy()
 })

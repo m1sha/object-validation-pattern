@@ -15,13 +15,17 @@ class TestDTO {
 }
 
 class TestObjectValidator extends ObjectValidator<TestDTO> {
+    constructor(state: StateObject){
+        super(state)
+    }
+
     protected setRules(rules: RulesBuilder<TestDTO>): void {
         rules
             .add("name")
             .isString()
             .notEmpty().breakChain()
             // .maxLength(10)
-            .check(p=>p.name.length<50, "length")
+            .check(p=> p.name.length < 50, "length")
 
         rules
             .add("value")
@@ -38,28 +42,26 @@ class TestObjectValidator extends ObjectValidator<TestDTO> {
         //     .entity()
         //     .use(TestObjectValidator)
     }
-
-    protected createState(): StateObject {
-        return StateObject.create(TestDTO)
-    }
 }
 
 test("validator test", () => {
     const entity = new TestDTO()
-    entity.name = null
+    entity.name = ""
     entity.value = 5
-    const validator = new TestObjectValidator()
-    const result = validator.validate(entity)
-    expect(result.getValue("name")).toEqual({ valid: false, text: "name: is empty" })
-    expect(result.getValue("value")).toEqual({ valid: true, text: "" })
-    expect(result.isValid).toBeFalsy()
+    const state = StateObject.create(TestDTO)
+    const validator = new TestObjectValidator(state)
+    validator.validate(entity)
+    expect(state.getValue("name")).toEqual({ valid: false, text: "name: is empty" })
+    expect(state.getValue("value")).toEqual({ valid: true, text: "" })
+    expect(state.isValid).toBeFalsy()
 })
 
 test("validator test good", () => {
     const entity = new TestDTO()
     entity.name = "dd222"
     entity.value = 5
-    const validator = new TestObjectValidator()
-    const result = validator.validate(entity)
-    expect(result.isValid).toBeTruthy()
+    const state = StateObject.create(TestDTO)
+    const validator = new TestObjectValidator(state)
+    validator.validate(entity)
+    expect(state.isValid).toBeTruthy()
 })

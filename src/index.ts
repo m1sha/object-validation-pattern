@@ -53,22 +53,24 @@ class BlockStackItem implements IStackItem {
 }
 
 export abstract class ObjectValidator<T> {
-  protected abstract setRules(rules: RulesBuilder<T>): void
-  protected abstract createState(): StateObject
+  constructor(state: StateObject){
+    this.state = state
+  }
 
-  validate(item: T): StateObject {
+  protected abstract setRules(rules: RulesBuilder<T>): void
+  readonly state: StateObject
+
+  validate(item: T): void {
     return this.internalValidate(item)
   }
 
-  validateField<K extends keyof T>(item: T, fieldName: K): StateObject {
-    return this.internalValidate(item, (p) => p === fieldName)
+  validateField<K extends keyof T>(item: T, fieldName: K): void {
+    this.internalValidate(item, (p) => p === fieldName)
   }
 
-  private internalValidate(item: T, callback?: ValidateFieldCallback): StateObject {
-    const state = this.createState()
-
+  private internalValidate(item: T, callback?: ValidateFieldCallback): void {
     const stack = new RuleStack()
-    const builder = new RulesBuilder<T>({ item, stack })
+    const builder = new RulesBuilder<T>({item, stack })
     this.setRules(builder)
 
     let key = null
@@ -84,8 +86,8 @@ export abstract class ObjectValidator<T> {
 
       if (current instanceof RuleStackItem) {
         const text = current.result ? '' : current.message
-        const si = state[current.key] as StateItem
-        si.setValue(!text, text || '')
+        const si = this.state.getValue(current.key)
+        if (si) si.setValue(!text, text || '')
       }
 
       if (current instanceof BlockStackItem) {
@@ -99,48 +101,53 @@ export abstract class ObjectValidator<T> {
         }
       }
     }
-
-    return state
   }
 }
 
 type ValidateFieldCallback = (fieldName: string) => boolean
 
-export class ValidationState {
-  static create<T>(obj: T): StateObject {
-    const result = new StateObject()
-    for (const key in obj) {
-      if ({}.hasOwnProperty.call(obj, key)) {
-        StateReflector.createProperty(result, key)
-      }
-    }
+// export class ValidationState {
+//   static create<T>(obj: T): StateObject {
+//     const result = new StateObject()
+//     for (const key in obj) {
+//       if ({}.hasOwnProperty.call(obj, key)) {
+//         StateReflector.createProperty(result, key)
+//       }
+//     }
 
-    return result
-  }
+//     return result
+//   }
 
-  static formType<T>(type: new () => T): StateObject {
-    return this.create(new type())
-  }
-}
+//   static formType<T>(type: new () => T): StateObject {
+//     return this.create(new type())
+//   }
+// }
 
-class StateReflector {
-  static createProperty(state: StateObject, key: string) {
-    const value = new StateItem()
-    Object.defineProperty(state, key, {
-      value,
-      writable: true,
-      enumerable: true,
-      configurable: true,
-    })
+// class StateReflector {
+//   static createProperty(state: StateObject, key: string) {
+//     const value = new StateItem()
+//     Object.defineProperty(state, key, {
+//       value,
+//       writable: true,
+//       enumerable: true,
+//       configurable: true,
+//     })
+//   }
+// }
+
+export class ValidationResult {
+  readonly items: Record<string, StateItem>
+  constructor(){
+    this.items = {}
   }
 }
 
 export class StateItem {
-  valid: boolean
+  valid?: boolean
   text: string
 
   constructor() {
-    this.valid = false
+    this.valid = undefined
     this.text = ''
   }
 
@@ -151,6 +158,11 @@ export class StateItem {
 }
 
 export class StateObject {
+  readonly items: Record<string, StateItem>
+  constructor(){
+    this.items = {}
+  }
+
   clear(): void {
     for (const key in this) {
       if ({}.hasOwnProperty.call(this, key)) {
@@ -164,21 +176,22 @@ export class StateObject {
   }
 
   get isValid(): boolean {
-    for (const [, value] of Object.entries(this)) {
+    for (const [, value] of Object.entries(this.items)) {
       if (value instanceof StateItem && value.valid === false) return false
     }
     return true
   }
 
-  getValue(name: string): StateItem {
-    for (const [key, value] of Object.entries(this)) {
-      if (key === name) return value as StateItem
-    }
-    return null
+  getValue(name: string): StateItem | null {
+    return this.items[name]
   }
 
-  static create<T>(type: new () => T): StateObject {
-    return ValidationState.formType(type)
+  static create<R>(type: new () => R): StateObject {
+    const result = new StateObject()
+    for (const [key] of Object.entries(new type())){
+      result.items[key] = new StateItem()
+    }
+    return result
   }
 }
 
@@ -186,6 +199,11 @@ export type FieldValidationCallback<T> = (obj: T) => boolean
 abstract class FieldValidationBuilder<T, K> {
   protected readonly fieldName: K
   protected readonly validator: IValidator
+  get fieldNameString(): string {
+    if (typeof this.fieldName === 'string')
+      return this.fieldName
+    throw new Error(`${typeof this.fieldName}`)
+  }
 
   constructor(field: K, validator: IValidator) {
     this.fieldName = field
@@ -194,7 +212,8 @@ abstract class FieldValidationBuilder<T, K> {
 
   check(action: FieldValidationCallback<T>, message: string): this {
     const { item, stack } = this.validator
-    stack.push(new RuleStackItem(this.fieldName.toString(), () => action(item as T), message))
+    Object.entries(item) // this.fieldNameString
+    stack.push(new RuleStackItem(this.fieldNameString, () => action(item as T), message))
     return this
   }
 
@@ -211,12 +230,12 @@ abstract class FieldValidationBuilder<T, K> {
   }
 
   break(): this {
-    this.validator.stack.items.push(new BlockStackItem(this.fieldName.toString(), true))
+    this.validator.stack.items.push(new BlockStackItem(this.fieldNameString, true))
     return this
   }
 
   breakChain(): this {
-    this.validator.stack.items.push(new BlockStackItem(this.fieldName.toString(), false))
+    this.validator.stack.items.push(new BlockStackItem(this.fieldNameString, false))
     return this
   }
 }
@@ -227,22 +246,17 @@ class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
   }
 
   notEmpty(message?: string): this {
-    const { item, stack } = this.validator
-    const value = item[this.fieldName]
-    stack.push(
-      new RuleStackItem(this.fieldName.toString(), () => !!value, message || `${this.fieldName.toString()}: is empty`),
-    )
-    return this
+    return this.check(obj=> !!obj[this.fieldNameString], message || `${this.fieldNameString}: is empty`)
   }
 
   maxLength(num: number, message?: string): this {
     const { item, stack } = this.validator
-    const value = item[this.fieldName] as string
+    const value = item[this.fieldNameString] as string
     stack.push(
       new RuleStackItem(
-        this.fieldName.toString(),
+        this.fieldNameString,
         () => value.length < num,
-        message || `${this.fieldName.toString()}: max length is ${num}`,
+        message || `${this.fieldNameString}: max length is ${num}`,
       ),
     )
     return this
@@ -256,12 +270,12 @@ class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
 
   range(start: number, end: number, message?: string): this {
     const { item, stack } = this.validator
-    const value = item[this.fieldName] as number
+    const value = item[this.fieldNameString] as number
     stack.push(
       new RuleStackItem(
-        this.fieldName.toString(),
+        this.fieldNameString,
         () => value >= start && value <= end,
-        message || `${this.fieldName.toString()}: out of range (${start}:${end})`,
+        message || `${this.fieldNameString}: out of range (${start}:${end})`,
       ),
     )
     return this

@@ -3,7 +3,7 @@
   "version": "0.0.12",
   "description": "",
   "main": "lib/index.js",
-  "types": "lib/",
+  "typings": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "npx jest",

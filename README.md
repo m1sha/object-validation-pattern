@@ -1,12 +1,19 @@
-# Object Validation pattern
+# Object Validation Pattern
 
 ```typescript
 
-interface SignUpModel {
+class SignUpModel {
     name: string
     email: string
     password: string
     confirmPassword: string
+
+    constructor(){
+        this.name = ""
+        this.email = ""
+        this.password = ""
+        this.confirmPassword = ""
+    }
 }
 
 class SignUpValidator extends ObjectValidator<SignUpModel> {
@@ -49,19 +56,18 @@ class SignUpValidator extends ObjectValidator<SignUpModel> {
 
 ...
 
-const model = {
-    name: "User name",
-    email: "username@someexampleserver.com",
-    password: "password",
-    confirmPassword: "passw0rd"
-}
+const model = new SignUpModel() 
+model.name: "User name",
+model.email: "username@someexampleserver.com",
+model.password: "password",
+model.confirmPassword: "passw0rd"
 
 const modelState = StateObject.create(SignUpModel)
 const validator = new SignUpValidator(modelState)
 validator.validate(model)
 
 console.log(modelState.isValid) 
-console.log(modelState.state) 
+console.log(modelState) 
 
 /*
 Output:

@@ -1,84 +1,83 @@
-interface IStackItem {
+interface StackItem {
     readonly key: string;
 }
 declare class RuleStack {
-    readonly items: IStackItem[];
+    readonly items: StackItem[];
     constructor();
-    push(item: IStackItem): void;
+    push(item: StackItem): void;
 }
-interface IValidator {
+interface ValidatorState {
     readonly item: unknown;
     readonly stack: RuleStack;
+    readonly state: StateObject;
 }
 export declare abstract class ObjectValidator<T> {
+    constructor(state: StateObject);
     protected abstract setRules(rules: RulesBuilder<T>): void;
-    protected abstract createState(): StateObject;
-    validate(item: T): StateObject;
-    validateField<K extends keyof T>(item: T, fieldName: K): StateObject;
-    private _validate;
+    readonly state: StateObject;
+    validate(item: T): void;
+    validateField<K extends keyof T>(item: T, fieldName: K): void;
+    private internalValidate;
 }
-export declare class ValidationState {
-    static create(obj: any): StateObject;
-    static formType<T>(type: {
-        new (): T;
-    }): StateObject;
+export declare class ValidationResult {
+    readonly items: Record<string, StateItem>;
+    constructor();
 }
 export declare class StateItem {
-    valid: Boolean;
+    valid?: boolean;
     text: string;
     constructor();
-    setValue(valid: Boolean, text: string): void;
+    setValue(valid: boolean, text: string): void;
 }
 export declare class StateObject {
+    readonly items: Record<string, StateItem>;
+    constructor();
     clear(): void;
     get isValid(): boolean;
-    static create<T>(type: {
-        new (): T;
-    }): StateObject;
+    getValue(name: string): StateItem | null;
+    setValue(name: string, item: StateItem): void;
 }
 export declare type FieldValidationCallback<T> = (obj: T) => boolean;
-declare abstract class FieldValidationBuilder<K> {
-    protected readonly field: K;
-    protected readonly validator: IValidator;
-    constructor(field: K, validator: IValidator);
-    check<T>(action: FieldValidationCallback<T>, message: string): this;
-    null(message?: string): this;
+declare abstract class FieldValidationBuilder<T, K> {
+    protected readonly fieldName: K;
+    protected readonly validatorState: ValidatorState;
+    get fieldNameString(): string;
+    constructor(field: K, validator: ValidatorState);
+    check(action: FieldValidationCallback<T>, message: string): this;
     breakIf(): this;
     break(): this;
     breakChain(): this;
 }
-declare class StringFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
-    constructor(field: K, validator: IValidator);
+declare class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+    constructor(field: K, validator: ValidatorState);
     notEmpty(message?: string): this;
     maxLength(num: number, message?: string): this;
 }
-declare class NumberFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
-    constructor(field: K, validator: IValidator);
+declare class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+    constructor(field: K, validator: ValidatorState);
     range(start: number, end: number, message?: string): this;
 }
-export declare type ForElementCallback<K> = (caseTypes: CaseTypes<K>) => void;
-declare class ArrayFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
-    constructor(field: K, validator: IValidator);
-    forElement(callback: ForElementCallback<K>): void;
+export declare type ForElementCallback<T, K> = (caseTypes: CaseTypes<T, K>) => void;
+declare class ArrayFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+    constructor(field: K, validator: ValidatorState);
+    forElement(callback: ForElementCallback<T, K>): void;
 }
-declare class EntityFieldValidationBuilder<K> extends FieldValidationBuilder<K> {
-    constructor(field: K, validator: IValidator);
-    use<T>(type: {
-        new (): T;
-    }): this;
+declare class EntityFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+    constructor(field: K, validator: ValidatorState);
+    use<TValidator extends ObjectValidator<T>>(type: new () => TValidator): this;
 }
-export declare class CaseTypes<K> {
+export declare class CaseTypes<T, K> {
     private readonly field;
-    private validator;
-    constructor(field: K, validator: IValidator);
-    string(): StringFieldValidationBuilder<K>;
-    number(): NumberFieldValidationBuilder<K>;
-    array(): ArrayFieldValidationBuilder<K>;
-    entity(): EntityFieldValidationBuilder<K>;
+    private validatorState;
+    constructor(field: K, validator: ValidatorState);
+    isString(): StringFieldValidationBuilder<T, K>;
+    isNumber(): NumberFieldValidationBuilder<T, K>;
+    isArray(): ArrayFieldValidationBuilder<T, K>;
+    isEntity(): EntityFieldValidationBuilder<T, K>;
 }
 export declare class RulesBuilder<T> {
-    private validator;
-    constructor(validator: IValidator);
-    add<K extends keyof T>(fieldName: K): CaseTypes<K>;
+    private validatorState;
+    constructor(validatorState: ValidatorState);
+    add<K extends keyof T>(fieldName: K): CaseTypes<T, K>;
 }
 export {};

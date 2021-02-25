@@ -2,3 +2,4 @@
 **/node_modules/
 **/publish/
 **/package-lock.json
+**/lib/

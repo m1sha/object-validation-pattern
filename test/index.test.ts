@@ -1,17 +1,10 @@
 import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
 
-class TestDTO {
+interface TestDTO {
     name: string
     value: number
     // values: string[]
     // inner: TestDTO
-
-    constructor() {
-        this.name = ""
-        this.value = 0
-        //  this.values = []
-        // this.inner = null
-    }
 }
 
 class TestObjectValidator extends ObjectValidator<TestDTO> {
@@ -45,10 +38,12 @@ class TestObjectValidator extends ObjectValidator<TestDTO> {
 }
 
 test("validator test", () => {
-    const entity = new TestDTO()
-    entity.name = ""
-    entity.value = 5
-    const state = StateObject.create(TestDTO)
+    const entity = {
+        name:  "",
+        value:  5
+    }
+
+    const state = new StateObject()
     const validator = new TestObjectValidator(state)
     validator.validate(entity)
     expect(state.getValue("name")).toEqual({ valid: false, text: "name: is empty" })
@@ -57,10 +52,12 @@ test("validator test", () => {
 })
 
 test("validator test good", () => {
-    const entity = new TestDTO()
-    entity.name = "dd222"
-    entity.value = 5
-    const state = StateObject.create(TestDTO)
+    const entity = {
+        name:  "dd222",
+        value:  5
+    }
+
+    const state = new StateObject()
     const validator = new TestObjectValidator(state)
     validator.validate(entity)
     expect(state.isValid).toBeTruthy()

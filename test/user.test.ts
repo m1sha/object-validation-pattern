@@ -37,7 +37,7 @@ test("user entities", ()=>{
     const signUp = new SignUp()
     signUp.login = "sa"
 
-    const state = StateObject.create(SignUp)
+    const state = new StateObject()
     const signUpValidator = new SignUpValidator(state)
     signUpValidator.validate(signUp)
     expect(state.isValid).toBeTruthy()
@@ -45,10 +45,10 @@ test("user entities", ()=>{
 
 test("user entities", ()=>{
     const signIn = new SignIn()
-    signIn.login = "sa"
+    signIn.login = ""
 
-    const state = StateObject.create(SignIn)
+    const state = new StateObject()
     const signUpValidator = new SignInValidator(state)
     signUpValidator.validate(signIn)
-    expect(state.isValid).toBeTruthy()
+    expect(state.isValid).toBeFalsy()
 })

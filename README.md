@@ -1,19 +1,11 @@
 # Object Validation Pattern
 
 ```typescript
-
-class SignUpModel {
+interface SignUpModel {
     name: string
     email: string
     password: string
     confirmPassword: string
-
-    constructor(){
-        this.name = ""
-        this.email = ""
-        this.password = ""
-        this.confirmPassword = ""
-    }
 }
 
 class SignUpValidator extends ObjectValidator<SignUpModel> {
@@ -30,7 +22,8 @@ class SignUpValidator extends ObjectValidator<SignUpModel> {
             .minLength(3)
             .maxLength(10)
             .breakChain()
-            .check(async (_, name) => await !userService.userExists(name), "user already exists")
+            .check((_, name) => !userService.userExists(name),
+                "user already exists")
 
         rules
             .add("email")
@@ -49,33 +42,40 @@ class SignUpValidator extends ObjectValidator<SignUpModel> {
             .isString()
             .notEmpty()
             .breakChain()
-            .compareWithField("password", "equal", "The password and the confirm password fields are not same")
+            .compareWithField("password", "equal", 
+                "The password and the confirm password fields are not same")
            
     }
 }
 
 ...
 
-const model = new SignUpModel() 
-model.name: "User name",
-model.email: "username@someexampleserver.com",
-model.password: "password",
-model.confirmPassword: "passw0rd"
+const model = {
+    name: "User name",
+    email: "username@someexampleserver.com",
+    password: "password",
+    confirmPassword: "passw0rd"
+}
 
-const modelState = StateObject.create(SignUpModel)
+const modelState = new StateObject()
 const validator = new SignUpValidator(modelState)
-validator.validate(model)
+validator.validate(model) 
+
+/*
+* or for the the field you can use 
+* validator.validateField(model, "confirmPassword")
+*/
 
 console.log(modelState.isValid) 
-console.log(modelState) 
+console.log(modelState.items) 
 
 /*
 Output:
 
 false
-
 [
     "confirmPassword": [
+        ...
         { 
             "valid": false, 
             "text": "The password and the confirm password fields are not same"
@@ -84,6 +84,4 @@ false
 ]
 
 */
-...
-
 ```

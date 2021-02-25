@@ -1,7 +1,7 @@
 {
   "name": "object-validation-pattern",
   "version": "0.0.14",
-  "description": "",
+  "description": "DTO entities validator",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -14,7 +14,10 @@
     "validation",
     "validator",
     "validate",
-    "object validation"
+    "object validation",
+    "dto",
+    "entities validator",
+    "entity validator"
   ],
   "author": "m1sha",
   "license": "ISC",

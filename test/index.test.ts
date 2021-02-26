@@ -3,7 +3,7 @@ import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
 interface TestDTO {
     name: string
     value: number
-    // values: string[]
+    values: string[]
     // inner: TestDTO
 }
 
@@ -18,7 +18,7 @@ class TestObjectValidator extends ObjectValidator<TestDTO> {
             .isString()
             .notEmpty().breakChain()
             // .maxLength(10)
-            .check(p=> p.name.length < 50, "length")
+            .check(obj => obj.name.length < 50, "length")
 
         rules
             .add("value")
@@ -27,38 +27,40 @@ class TestObjectValidator extends ObjectValidator<TestDTO> {
 
         // rules
         //     .add("values")
-        //     .array()
+        //     .isArray()
         //     .forElement(p => p.string().maxLength(12))
 
         // rules
         //     .add("inner")
-        //     .entity()
+        //     .isEntity()
         //     .use(TestObjectValidator)
     }
 }
 
-test("validator test", () => {
+test("validator test", async () => {
     const entity = {
         name:  "",
-        value:  5
+        value:  5,
+        values: []
     }
 
     const state = new StateObject()
     const validator = new TestObjectValidator(state)
-    validator.validate(entity)
+    await validator.validate(entity)
     expect(state.getValue("name")).toEqual({ valid: false, text: "name: is empty" })
     expect(state.getValue("value")).toEqual({ valid: true, text: "" })
-    expect(state.isValid).toBeFalsy()
+    expect(state.isValid()).toBeFalsy()
 })
 
-test("validator test good", () => {
+test("validator test good", async () => {
     const entity = {
         name:  "dd222",
-        value:  5
+        value:  5,
+        values: []
     }
 
     const state = new StateObject()
     const validator = new TestObjectValidator(state)
-    validator.validate(entity)
-    expect(state.isValid).toBeTruthy()
+    await validator.validate(entity)
+    expect(state.isValid()).toBeTruthy()
 })

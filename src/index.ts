@@ -21,22 +21,29 @@ interface ValidatorState {
 }
 
 type RuleStackOperationCallback = () => boolean
-
+type RuleStackOperationCallbackAsync = () => Promise<boolean>
 class RuleStackItem implements StackItem {
   private done?: boolean
-  private callback: RuleStackOperationCallback
+  private callback: RuleStackOperationCallback | RuleStackOperationCallbackAsync
   readonly key: string
   readonly message: string
 
-  constructor(key: string, callback: RuleStackOperationCallback, message: string) {
+  constructor(key: string, callback: RuleStackOperationCallback | RuleStackOperationCallbackAsync, message: string) {
     this.key = key
     this.callback = callback
     this.message = message
   }
 
-  get result(): boolean {
+  async result(): Promise<boolean> {
     if (this.done === undefined || typeof this.done === 'undefined') {
-      this.done = this.callback()
+      const result = this.callback()
+      if (result instanceof Promise){
+        this.done = await result
+      }
+
+      if (typeof result === "boolean"){
+        this.done = result
+      }
     }
 
     return this.done
@@ -54,24 +61,24 @@ class BlockStackItem implements StackItem {
 }
 
 export abstract class ObjectValidator<T> {
-  constructor(state: StateObject){
+  constructor(state: StateObject) {
     this.state = state
   }
 
   protected abstract setRules(rules: RulesBuilder<T>): void
   readonly state: StateObject
 
-  validate(item: T): void {
+  validate(item: T): Promise<void> {
     return this.internalValidate(item)
   }
 
-  validateField<K extends keyof T>(item: T, fieldName: K): void {
-    this.internalValidate(item, (p) => p === fieldName)
+  validateField<K extends keyof T>(item: T, fieldName: K): Promise<void> {
+    return this.internalValidate(item, (p) => p === fieldName)
   }
 
-  private internalValidate(item: T, callback?: ValidateFieldCallback): void {
+  private async internalValidate(item: T, callback?: ValidateFieldCallback): Promise<void> {
     const stack = new RuleStack()
-    const builder = new RulesBuilder<T>({item, stack, state: this.state })
+    const builder = new RulesBuilder<T>({ item, stack, state: this.state })
     this.setRules(builder)
 
     let key = null
@@ -86,19 +93,21 @@ export abstract class ObjectValidator<T> {
       }
 
       if (current instanceof RuleStackItem) {
-        const text = current.result ? '' : current.message
+        const value = current.result()
+        const text = await value ? '' : current.message
         const si = this.state.getValue(current.key)
         if (si) si.setValue(!text, text || '')
       }
 
       if (current instanceof BlockStackItem) {
         const rule = stack.items[index - 1] as RuleStackItem
-        if (rule && !rule.result && current.isBlock) {
-          break
+        const value = await rule.result()
+        if (rule && !value && !current.isBlock) {
+          key = rule.key
         }
 
-        if (rule && !rule.result && !current.isBlock) {
-          key = rule.key
+        if (rule && !value && current.isBlock) {
+          break
         }
       }
     }
@@ -109,7 +118,7 @@ type ValidateFieldCallback = (fieldName: string) => boolean
 
 export class ValidationResult {
   readonly items: Record<string, StateItem>
-  constructor(){
+  constructor() {
     this.items = {}
   }
 }
@@ -131,7 +140,7 @@ export class StateItem {
 
 export class StateObject {
   readonly items: Record<string, StateItem>
-  constructor(){
+  constructor() {
     this.items = {}
   }
 
@@ -147,7 +156,7 @@ export class StateObject {
     }
   }
 
-  get isValid(): boolean {
+  isValid(): boolean {
     for (const [, value] of Object.entries(this.items)) {
       if (value instanceof StateItem && value.valid === false) return false
     }
@@ -167,23 +176,15 @@ export class StateObject {
     current.valid = item.valid
     current.valid = item.valid
   }
-
-  // static create<R>(type: new () => R): StateObject {
-  //   const result = new StateObject()
-  //   for (const [key] of Object.entries(new type())){
-  //     result.items[key] = new StateItem()
-  //   }
-  //   return result
-  // }
 }
 
-export type FieldValidationCallback<T> = (obj: T) => boolean
+export type FieldValidationCallback<T, K, V> = (obj: T, key: K, value: V) => boolean
+export type FieldValidationCallbackAsync<T, K, V> = (obj: T, key: K, value: V) => Promise<boolean>
 abstract class FieldValidationBuilder<T, K> {
   protected readonly fieldName: K
   protected readonly validatorState: ValidatorState
-  get fieldNameString(): string {
-    if (typeof this.fieldName === 'string')
-      return this.fieldName
+  fieldNameString(): string {
+    if (typeof this.fieldName === 'string') return this.fieldName
     throw new Error(`${typeof this.fieldName}`)
   }
 
@@ -192,15 +193,27 @@ abstract class FieldValidationBuilder<T, K> {
     this.validatorState = validator
   }
 
-  check(action: FieldValidationCallback<T>, message: string): this {
+  check<V>(action: FieldValidationCallback<T, K, V>, message: string): this {
     const { item, stack } = this.validatorState
-    stack.push(new RuleStackItem(this.fieldNameString, () => action(item as T), message))
+    const value = item[this.fieldName] as V
+    stack.push(new RuleStackItem(this.fieldNameString(), () => action(item as T, this.fieldName, value), message))
     return this
   }
 
-  // compareWithField<K extends keyof T>(fieldName: K, comparer: CompareType) {
-  //   return this
-  // }
+  checkAsync<V>(action: FieldValidationCallbackAsync<T, K, V>, message: string): this {
+    const { item, stack } = this.validatorState
+    const value = item[this.fieldName] as V
+    stack.push(new RuleStackItem(this.fieldNameString(), async () => await action(item as T, this.fieldName, value), message))
+    return this
+  }
+
+  compareWithField<K2 extends keyof T>(fieldName: K2, comparer: CompareType, message: string) {
+    return this.check((obj, _, value) => compare(value, obj[fieldName], comparer), message)
+  }
+
+  fieldIs<K2 extends keyof T, V>(fieldName: K2, comparer: CompareType, value?: V, message?: string) {
+    return this.check(obj => compare(value, obj[fieldName], comparer), message)
+  }
 
   // null(message?: string): this {
   //   return this
@@ -211,12 +224,12 @@ abstract class FieldValidationBuilder<T, K> {
   }
 
   break(): this {
-    this.validatorState.stack.items.push(new BlockStackItem(this.fieldNameString, true))
+    this.validatorState.stack.items.push(new BlockStackItem(this.fieldNameString(), true))
     return this
   }
 
   breakChain(): this {
-    this.validatorState.stack.items.push(new BlockStackItem(this.fieldNameString, false))
+    this.validatorState.stack.items.push(new BlockStackItem(this.fieldNameString(), false))
     return this
   }
 }
@@ -227,20 +240,15 @@ class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
   }
 
   notEmpty(message?: string): this {
-    return this.check(obj=> !!obj[this.fieldNameString], message || `${this.fieldNameString}: is empty`)
+    return this.check((_, __, value) => !!value, message || `${this.fieldNameString()}: is empty`)
+  }
+
+  empty(message?: string): this {
+    return this.check((_, __, value) => !value, message || `${this.fieldNameString()}: isn't empty`)
   }
 
   maxLength(num: number, message?: string): this {
-    const { item, stack } = this.validatorState
-    const value = item[this.fieldNameString] as string
-    stack.push(
-      new RuleStackItem(
-        this.fieldNameString,
-        () => value.length < num,
-        message || `${this.fieldNameString}: max length is ${num}`,
-      ),
-    )
-    return this
+    return this.check((_, __, value) => String(value).length < num , message || `${this.fieldNameString()}: isn't empty`)
   }
 }
 
@@ -251,12 +259,12 @@ class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
 
   range(start: number, end: number, message?: string): this {
     const { item, stack } = this.validatorState
-    const value = item[this.fieldNameString] as number
+    const value = item[this.fieldNameString()] as number
     stack.push(
       new RuleStackItem(
-        this.fieldNameString,
+        this.fieldNameString(),
         () => value >= start && value <= end,
-        message || `${this.fieldNameString}: out of range (${start}:${end})`,
+        message || `${this.fieldNameString()}: out of range (${start}:${end})`,
       ),
     )
     return this
@@ -279,8 +287,9 @@ class EntityFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
     super(field, validator)
   }
 
-  use<TValidator extends ObjectValidator<T>>(type: new () => TValidator): this {
-    new type().validate(this.validatorState.item as T)
+  use<TValidator extends ObjectValidator<T>>(type: new (state: StateObject) => TValidator): this {
+    // const state = new StateObject()
+    // new type(state).validate(this.validatorState.item as T)
     return this
   }
 }
@@ -322,7 +331,17 @@ export class RulesBuilder<T> {
   }
 }
 
-// type CompareType = 'equal' | 'more' | 'less'
+type CompareType = 'equal' | 'more' | 'less'
 
-// function ddd(a: CompareType) {}
-// ddd('equal')
+const compare = (obj1: unknown, obj2: unknown, type: CompareType): boolean => {
+  switch (type) {
+    case 'equal':
+      return obj1 === obj2
+    case 'more':
+      return obj1 > obj2
+    case 'less':
+      return obj1 < obj2
+    default:
+      throw new Error(type)
+  }
+}

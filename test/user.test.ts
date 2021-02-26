@@ -1,24 +1,13 @@
 import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
 
-class SignIn {
+interface SignIn {
     login: string
     password: string
-
-    constructor(){
-        this.login = ""
-        this.password = ""
-    }
 }
 
-class SignUp extends SignIn {
+interface SignUp extends SignIn {
     email: string
     confirmPassword: string
-
-    constructor(){
-        super()
-        this.email = ""
-        this.confirmPassword = ""
-    }
 }
 
 abstract class SignBaseValidator<T extends SignIn> extends ObjectValidator<T>{
@@ -31,24 +20,34 @@ class SignInValidator extends SignBaseValidator<SignIn>{
 }
 
 class SignUpValidator extends SignBaseValidator<SignUp>{
+    protected setRules(rules: RulesBuilder<SignUp>): void {
+        super.setRules(rules)
+        rules.add("confirmPassword").isString().notEmpty().breakChain().compareWithField("password", "equal", "passwords aren't equal")
+    }
 }
 
-test("user entities", ()=>{
-    const signUp = new SignUp()
-    signUp.login = "sa"
+test("user entities", async () => {
+    const signUp = {
+        login : "sa",
+        password: "password",
+        confirmPassword: "password",
+        email: ""
+    }
 
     const state = new StateObject()
     const signUpValidator = new SignUpValidator(state)
-    signUpValidator.validate(signUp)
-    expect(state.isValid).toBeTruthy()
+    await signUpValidator.validate(signUp)
+    expect(state.isValid()).toBeTruthy()
 })
 
-test("user entities", ()=>{
-    const signIn = new SignIn()
-    signIn.login = ""
+test("user entities", async () => {
+    const signIn = {
+        login : "",
+        password: "",
+    }
 
     const state = new StateObject()
     const signUpValidator = new SignInValidator(state)
-    signUpValidator.validate(signIn)
-    expect(state.isValid).toBeFalsy()
+    await signUpValidator.validate(signIn)
+    expect(state.isValid()).toBeFalsy()
 })

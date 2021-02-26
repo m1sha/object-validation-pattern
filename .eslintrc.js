@@ -55,6 +55,7 @@ module.exports = {
         "@typescript-eslint/naming-convention": "error",
         "@typescript-eslint/no-empty-function": "error",
         "@typescript-eslint/no-empty-interface": "error",
+        "no-multiple-empty-lines": ["error", {max: 1, maxEOF: 0}],
         "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/no-misused-new": "error",
         "@typescript-eslint/no-namespace": "error",

@@ -1,6 +1,14 @@
 # Object Validation Pattern
 
+## Usage
+
 ```typescript
+import { 
+    ObjectValidator, 
+    RulesBuilder, 
+    StateObject 
+} from 'object-validator-pattern'
+
 interface SignUpModel {
     name: string
     email: string
@@ -9,11 +17,11 @@ interface SignUpModel {
 }
 
 class SignUpValidator extends ObjectValidator<SignUpModel> {
-    constructor(state: ObjectState){
+    constructor(state: ObjectState) {
         super(state)
     }
 
-    setRules(rules: RulesBuilder<TestDTO>): void{ 
+    setRules(rules: RulesBuilder<TestDTO>): void { 
         rules
             .add("name")
             .isString()
@@ -22,7 +30,8 @@ class SignUpValidator extends ObjectValidator<SignUpModel> {
             .minLength(3)
             .maxLength(10)
             .breakChain()
-            .check((_, name) => !userService.userExists(name),
+            .checkAsync(async (_, __, name) => 
+                !(await userService.userExists(name)),
                 "user already exists")
 
         rules
@@ -59,16 +68,18 @@ const model = {
 
 const modelState = new StateObject()
 const validator = new SignUpValidator(modelState)
-validator.validate(model) 
 
-/*
-* or for the the field you can use 
-* validator.validateField(model, "confirmPassword")
-*/
+async function validate() {
+    await validator.validate(model) 
 
-console.log(modelState.isValid) 
-console.log(modelState.items) 
+    /*
+    * or for the the field you can use 
+    * await validator.validateField(model, "confirmPassword")
+    */
 
+    console.log(modelState.isValid) 
+    console.log(modelState.items) 
+}
 /*
 Output:
 

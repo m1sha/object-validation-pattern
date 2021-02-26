@@ -12,7 +12,7 @@ interface SignUp extends SignIn {
 
 abstract class SignBaseValidator<T extends SignIn> extends ObjectValidator<T>{
     protected setRules(rules: RulesBuilder<T>): void {
-        rules.add("login").isString().notEmpty()
+        rules.add("login").isString().notEmpty().breakChain()
     }
 }
 
@@ -22,7 +22,23 @@ class SignInValidator extends SignBaseValidator<SignIn>{
 class SignUpValidator extends SignBaseValidator<SignUp>{
     protected setRules(rules: RulesBuilder<SignUp>): void {
         super.setRules(rules)
+        rules.add("login").isString().checkAsync(async (p,k)=> !(await UserService.nameExits(p[k])), "user name already exist")
         rules.add("confirmPassword").isString().notEmpty().breakChain().compareWithField("password", "equal", "passwords aren't equal")
+    }
+}
+
+class UserService {
+    static nameExits(name: string): Promise<boolean>{
+        return new Promise<boolean>((resolve, reject)=>{
+            setTimeout(() => {
+                try {
+                    resolve(name!==name)
+                }
+                catch(e){
+                    reject(e)
+                }
+            }, 300);
+        })
     }
 }
 

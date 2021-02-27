@@ -17,8 +17,9 @@ class TestObjectValidator extends ObjectValidator<TestData> {
             .add("name")
             .isString()
             .notEmpty().breakChain()
-            // .maxLength(10)
-            .check(obj => obj.name.length < 50, "length")
+            .minLength(1)
+            .maxLength(10)
+            .break()
 
         rules
             .add("value")
@@ -76,4 +77,17 @@ test("validatorField test", async ()=>{
     const validator = new TestObjectValidator(state)
     await validator.validateField(entity, "name")
     expect(state.getValue("name").valid).toBeTruthy()
+})
+
+test("validatorField test", async ()=>{
+    const entity = {
+        name:  "nameNameName",
+        value:  500,
+        values: []
+    }
+
+    const state = new StateObject()
+    const validator = new TestObjectValidator(state)
+    await validator.validateField(entity, "name")
+    expect(state.getValue("name").valid).toBeFalsy()
 })

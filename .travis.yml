@@ -1,0 +1,13 @@
+language: node_js
+node_js:
+  - "14.8.0"
+cache:
+  npm: false
+install:
+  - npm install -D typescript
+  - npm install -D tslib
+  - npm install -D jest
+  - npm install -D ts-jest
+  - npm install -D ts-node
+script:
+  - npm test

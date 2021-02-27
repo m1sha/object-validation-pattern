@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/m1sha/object-validation-pattern.svg?branch=master)](https://travis-ci.com/m1sha/object-validation-pattern)
+[![Coverage Status](https://coveralls.io/repos/github/m1sha/object-validation-pattern/badge.svg?branch=master)](https://coveralls.io/github/m1sha/object-validation-pattern?branch=master)
 
 # Object Validation Pattern
 

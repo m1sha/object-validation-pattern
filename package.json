@@ -8,7 +8,8 @@
     "build": "tsc src/index.ts  -d --outDir ./lib && tsc src/extensions.ts  -d --outDir ./lib",
     "test": "npx jest",
     "format": "prettier --write \"src/**/*.ts\"",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "cover": "npx jest --coverage && coveralls"
   },
   "keywords": [
     "validation",
@@ -33,6 +34,7 @@
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.15.1",
     "@typescript-eslint/parser": "^4.15.1",
+    "coveralls": "^3.1.0",
     "eslint": "^7.20.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",

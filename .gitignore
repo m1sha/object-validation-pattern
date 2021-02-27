@@ -3,3 +3,5 @@
 **/publish/
 **/package-lock.json
 **/lib/
+**/coverage/
+**/.coveralls.yml

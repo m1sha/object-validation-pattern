@@ -1,6 +1,6 @@
 {
   "name": "object-validation-pattern",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "DTO entities validator",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -22,11 +22,11 @@
   "author": "m1sha",
   "license": "MIT",
   "repository": {
-      "type": "git",
-      "url": "https://github.com/m1sha/object-validation-pattern.git"
+    "type": "git",
+    "url": "https://github.com/m1sha/object-validation-pattern.git"
   },
   "bugs": {
-      "url": "https://github.com/m1sha/object-validation-pattern/issues"
+    "url": "https://github.com/m1sha/object-validation-pattern/issues"
   },
   "homepage": "https://github.com/m1sha/object-validation-pattern",
   "devDependencies": {

@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/m1sha/object-validation-pattern.svg?branch=master)](https://travis-ci.com/m1sha/object-validation-pattern)
+
 # Object Validation Pattern
 
 ## Usage

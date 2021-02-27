@@ -60,6 +60,7 @@ class BlockStackItem implements StackItem {
   }
 }
 
+type ValidateFieldCallback = (fieldName: string) => boolean
 export abstract class ObjectValidator<T> {
   constructor(state: StateObject) {
     this.state = state
@@ -114,15 +115,6 @@ export abstract class ObjectValidator<T> {
   }
 }
 
-type ValidateFieldCallback = (fieldName: string) => boolean
-
-export class ValidationResult {
-  readonly items: Record<string, StateItem>
-  constructor() {
-    this.items = {}
-  }
-}
-
 export class StateItem {
   valid?: boolean
   text: string
@@ -145,9 +137,9 @@ export class StateObject {
   }
 
   clear(): void {
-    for (const key in this) {
-      if ({}.hasOwnProperty.call(this, key)) {
-        const item = this[key]
+    for (const key in this.items) {
+      if ({}.hasOwnProperty.call(this.items, key)) {
+        const item = this.items[key]
         if (item instanceof StateItem) {
           item.valid = undefined
           item.text = ''
@@ -288,11 +280,11 @@ export class EntityFieldValidationBuilder<T, K> extends FieldValidationBuilder<T
     super(field, validator)
   }
 
-  use<TValidator extends ObjectValidator<T>>(type: new (state: StateObject) => TValidator): this {
-    // const state = new StateObject()
-    // new type(state).validate(this.validatorState.item as T)
-    return this
-  }
+  // use<TValidator extends ObjectValidator<T>>(type: new (state: StateObject) => TValidator): this {
+  //   // const state = new StateObject()
+  //   // new type(state).validate(this.validatorState.item as T)
+  //   return this
+  // }
 }
 
 export class CaseTypes<T, K> {
@@ -333,7 +325,7 @@ export class RulesBuilder<T> {
 }
 
 const operationNames = ["equals", "notEquals", "weakEquals", "more", "less", "moreOrEquals", "lessOrEquals" ] as const
-type CompareType = typeof operationNames[number]
+export type CompareType = typeof operationNames[number]
 const compare = (obj1: unknown, obj2: unknown, type: CompareType): boolean => {
   const operationList = [
     ()=> obj1 === obj2,

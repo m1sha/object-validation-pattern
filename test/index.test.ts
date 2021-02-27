@@ -1,18 +1,18 @@
 import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
 
-interface TestDTO {
+interface TestData {
     name: string
     value: number
     values: string[]
     // inner: TestDTO
 }
 
-class TestObjectValidator extends ObjectValidator<TestDTO> {
+class TestObjectValidator extends ObjectValidator<TestData> {
     constructor(state: StateObject){
         super(state)
     }
 
-    protected setRules(rules: RulesBuilder<TestDTO>): void {
+    protected setRules(rules: RulesBuilder<TestData>): void {
         rules
             .add("name")
             .isString()
@@ -63,4 +63,17 @@ test("validator test good", async () => {
     const validator = new TestObjectValidator(state)
     await validator.validate(entity)
     expect(state.isValid()).toBeTruthy()
+})
+
+test("validatorField test", async ()=>{
+    const entity = {
+        name:  "name",
+        value:  500,
+        values: []
+    }
+
+    const state = new StateObject()
+    const validator = new TestObjectValidator(state)
+    await validator.validateField(entity, "name")
+    expect(state.getValue("name").valid).toBeTruthy()
 })

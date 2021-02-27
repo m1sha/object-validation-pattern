@@ -23,7 +23,7 @@ class SignUpValidator extends SignBaseValidator<SignUp>{
     protected setRules(rules: RulesBuilder<SignUp>): void {
         super.setRules(rules)
         rules.add("login").isString().checkAsync<string>(async (_,__, v)=> !(await UserService.nameExits(v)), "user name already exist")
-        rules.add("confirmPassword").isString().notEmpty().breakChain().compareWithField("password", "equal", "passwords aren't equal")
+        rules.add("confirmPassword").isString().notEmpty().breakChain().compareWithField("password", "equals", "passwords aren't equal")
     }
 }
 

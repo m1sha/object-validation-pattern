@@ -331,17 +331,19 @@ export class RulesBuilder<T> {
   }
 }
 
-type CompareType = 'equal' | 'more' | 'less'
-
+const operationNames = ["equals", "notEquals", "weakEquals", "more", "less", "moreOrEquals", "lessOrEquals" ] as const
+type CompareType = typeof operationNames[number]
 const compare = (obj1: unknown, obj2: unknown, type: CompareType): boolean => {
-  switch (type) {
-    case 'equal':
-      return obj1 === obj2
-    case 'more':
-      return obj1 > obj2
-    case 'less':
-      return obj1 < obj2
-    default:
-      throw new Error(type)
-  }
+  const operationList = [
+    ()=> obj1 === obj2,
+    ()=> obj1 !== obj2,
+    ()=> obj1 ==  obj2, // eslint-disable-line eqeqeq
+    ()=> obj1 >   obj2,
+    ()=> obj1 <   obj2,
+    ()=> obj1 >=  obj2,
+    ()=> obj1 <=  obj2
+  ]
+  const index = operationNames.indexOf(type)
+  if (index === -1) throw new Error("compare. operation isn't found")
+  return operationList[index]()
 }

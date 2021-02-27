@@ -9,6 +9,7 @@ install:
   - npm install -D jest
   - npm install -D ts-jest
   - npm install -D ts-node
+  - npm install -D coveralls
 script:
   - npm test
 jobs:

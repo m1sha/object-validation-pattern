@@ -176,8 +176,7 @@ abstract class FieldValidationBuilder<T, K> {
   protected readonly fieldName: K
   protected readonly validatorState: ValidatorState
   fieldNameString(): string {
-    if (typeof this.fieldName === 'string') return this.fieldName
-    throw new Error(`${typeof this.fieldName}`)
+    return this.fieldName.toString()
   }
 
   constructor(field: K, validator: ValidatorState) {
@@ -211,9 +210,9 @@ abstract class FieldValidationBuilder<T, K> {
   //   return this
   // }
 
-  breakIf(): this {
-    return this
-  }
+  // breakIf(): this {
+  //   return this
+  // }
 
   break(): this {
     this.validatorState.stack.items.push(new BlockStackItem(this.fieldNameString(), true))
@@ -240,7 +239,11 @@ export class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T
   }
 
   maxLength(num: number, message?: string): this {
-    return this.check((_, __, value) => String(value).length < num , message || `${this.fieldNameString()}: isn't empty`)
+    return this.check((_, __, value) => String(value).length <= num , message || `${this.fieldNameString()}: isn't empty`)
+  }
+
+  minLength(num: number, message?: string): this {
+    return this.check((_, __, value) => String(value).length >= num , message || `${this.fieldNameString()}: isn't empty`)
   }
 }
 

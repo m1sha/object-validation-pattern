@@ -234,7 +234,7 @@ abstract class FieldValidationBuilder<T, K> {
   }
 }
 
-class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+export class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
   constructor(field: K, validator: ValidatorState) {
     super(field, validator)
   }
@@ -252,7 +252,7 @@ class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
   }
 }
 
-class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+export class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
   constructor(field: K, validator: ValidatorState) {
     super(field, validator)
   }
@@ -272,17 +272,18 @@ class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
 }
 
 export type ForElementCallback<T, K> = (caseTypes: CaseTypes<T, K>) => void
-class ArrayFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+export class ArrayFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
   constructor(field: K, validator: ValidatorState) {
     super(field, validator)
   }
 
-  forElement(callback: ForElementCallback<T, K>) {
+  forElement(callback: ForElementCallback<T, K>): this {
     callback(new CaseTypes<T, K>(this.fieldName, this.validatorState))
+    return this
   }
 }
 
-class EntityFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+export class EntityFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
   constructor(field: K, validator: ValidatorState) {
     super(field, validator)
   }

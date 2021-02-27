@@ -1,4 +1,5 @@
-import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
+import { ObjectValidator, RulesBuilder, StateObject } from "../src/index"
+import "../src/extensions"
 
 interface SignIn {
     login: string
@@ -23,6 +24,7 @@ class SignUpValidator extends SignBaseValidator<SignUp>{
     protected setRules(rules: RulesBuilder<SignUp>): void {
         super.setRules(rules)
         rules.add("login").isString().checkAsync<string>(async (_,__, v)=> !(await UserService.nameExits(v)), "user name already exist")
+        rules.add("email").isString().notEmpty().breakChain().isEmail()
         rules.add("confirmPassword").isString().notEmpty().breakChain().compareWithField("password", "equals", "passwords aren't equal")
     }
 }
@@ -47,7 +49,7 @@ test("user entities", async () => {
         login : "sa",
         password: "password",
         confirmPassword: "password",
-        email: ""
+        email: "ss@dd.ru"
     }
 
     const state = new StateObject()

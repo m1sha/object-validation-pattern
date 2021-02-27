@@ -6,7 +6,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc src/index.ts  -d --outDir ./lib && tsc src/extensions.ts  -d --outDir ./lib",
-    "test": "npx jest",
+    "test": "npx jest --coverage",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint .",
     "cover": "npx jest --coverage && coveralls"

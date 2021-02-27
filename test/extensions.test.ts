@@ -2,25 +2,29 @@ import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
 import "../src/extensions"
 
 interface TestData{
-    value: number
+    negative: number
+    positive: number
+    zero: number
 }
 
 class TestDataValidator extends ObjectValidator<TestData>{
     protected setRules(rules: RulesBuilder<TestData>): void {
-        rules.add("value").isNumber().isInteger().isNegative()
+        rules.add("negative").isNumber().isInteger().isNegative()
+        rules.add("positive").isNumber().isInteger().isPositive()
+        rules.add("zero").isNumber().isInteger().isZero()
     }
 }
 
-test("value should be integer & negative", async ()=>{
+test("value should be valid", async ()=>{
     const stateModel = new StateObject()
     const validator = new TestDataValidator(stateModel)
-    await validator.validate({value: -1})
+    await validator.validate({negative: -1, positive: 1, zero: 0})
     expect(stateModel.isValid()).toBeTruthy()
 })
 
-test("value should be not integer & negative", async ()=>{
+test("value should be not valid", async ()=>{
     const stateModel = new StateObject()
     const validator = new TestDataValidator(stateModel)
-    await validator.validate({value: .1})
+    await validator.validate({negative: .1, positive: -1, zero: 2})
     expect(stateModel.isValid()).toBeFalsy()
 })

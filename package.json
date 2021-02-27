@@ -20,7 +20,15 @@
     "entity validator"
   ],
   "author": "m1sha",
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/m1sha/object-validation-pattern.git"
+  },
+  "bugs": {
+      "url": "https://github.com/m1sha/object-validation-pattern/issues"
+  },
+  "homepage": "https://github.com/m1sha/object-validation-pattern",
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@typescript-eslint/eslint-plugin": "^4.15.1",

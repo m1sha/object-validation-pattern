@@ -10,7 +10,8 @@ import {
     ObjectValidator, 
     RulesBuilder, 
     StateObject 
-} from 'object-validator-pattern'
+} from "object-validator-pattern"
+import "object-validator-pattern/lib/extensions"
 
 interface SignUpModel {
     name: string
@@ -99,3 +100,7 @@ false
 
 */
 ```
+
+## How can I do custom validation extension
+
+[Custom validation extension](docs/CustomExtensions.md)

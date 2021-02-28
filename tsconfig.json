@@ -4,7 +4,8 @@
       "target": "es5",
       "module": "commonjs",
       "declaration": true,
-      "rootDir": "."
+      "rootDir": ".",
+      "stripInternal": true
   },
   "include": [
       "src/**/*.ts",

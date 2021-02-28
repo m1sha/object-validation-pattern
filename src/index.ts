@@ -94,10 +94,9 @@ export abstract class ObjectValidator<T> {
       }
 
       if (current instanceof RuleStackItem) {
-        const value = current.result()
-        const text = await value ? '' : current.message
-        const si = this.state.getValue(current.key)
-        if (si) si.setValue(!text, text || '')
+        const valid = await current.result()
+        const text =  valid ? "" : format(current.message, item, current.key, item[current.key])
+        this.state.getValue(current.key).setValue(valid, text)
       }
 
       if (current instanceof BlockStackItem) {
@@ -130,7 +129,7 @@ export class StateItem {
   }
 }
 
-export class StateObject {
+export class StateObject { // TODO StateObject<T>
   readonly items: Record<string, StateItem>
   constructor() {
     this.items = {}
@@ -155,10 +154,12 @@ export class StateObject {
     return true
   }
 
+  // TODO StateObject<T>.getValue<K extends keyof T>(name: K): StateItem (Not nullable)
   getValue(name: string): StateItem | null {
     return this.items[name]
   }
 
+  /** @internal */
   setValue(name: string, item: StateItem): void {
     let current = this.items[name]
     if (!current) {
@@ -231,19 +232,19 @@ export class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T
   }
 
   notEmpty(message?: string): this {
-    return this.check((_, __, value) => !!value, message || `${this.fieldNameString()}: is empty`)
+    return this.check((_, __, value) => !!value, message || "$name: is empty")
   }
 
   empty(message?: string): this {
-    return this.check((_, __, value) => !value, message || `${this.fieldNameString()}: isn't empty`)
+    return this.check((_, __, value) => !value, message || "$name: isn't empty")
   }
 
   maxLength(num: number, message?: string): this {
-    return this.check((_, __, value) => String(value).length <= num , message || `${this.fieldNameString()}: isn't empty`)
+    return this.check((_, __, value) => String(value).length <= num , message || `$name: isn't empty`)
   }
 
   minLength(num: number, message?: string): this {
-    return this.check((_, __, value) => String(value).length >= num , message || `${this.fieldNameString()}: isn't empty`)
+    return this.check((_, __, value) => String(value).length >= num , message || `$name: isn't empty`)
   }
 }
 
@@ -259,7 +260,7 @@ export class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T
       new RuleStackItem(
         this.fieldNameString(),
         () => value >= start && value <= end,
-        message || `${this.fieldNameString()}: out of range (${start}:${end})`,
+        message || `$name: out of range (${start}:${end})`,
       ),
     )
     return this
@@ -342,4 +343,10 @@ const compare = (obj1: unknown, obj2: unknown, type: CompareType): boolean => {
   const index = operationNames.indexOf(type)
   if (index === -1) throw new Error("compare. operation isn't found")
   return operationList[index]()
+}
+
+const format = <T>(message: string, obj:T, key: string, value: unknown): string =>{
+  return message
+    .replace(/\$name/, key)
+    .replace(/\$value/, value ? value.toString(): "undefined")
 }

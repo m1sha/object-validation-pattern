@@ -17,22 +17,22 @@ StringFieldValidationBuilder.prototype.isEmail = function<T, K>(): StringFieldVa
    const builder = this as StringFieldValidationBuilder<T, K>
    return builder.check((_, __, value) =>
     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i
-    .test(String(value)), "isn't email")
+    .test(String(value)), "$name: $value isn't email")
 }
 
 NumberFieldValidationBuilder.prototype.isPositive = function<T, K>(): NumberFieldValidationBuilder<T, K> {
     const builder = this as NumberFieldValidationBuilder<T, K>
-    return builder.check((_, __, value) => Number(value) > 0, "value isn't positive")
+    return builder.check((_, __, value) => Number(value) > 0, "$name: $value isn't positive")
 }
 
 NumberFieldValidationBuilder.prototype.isNegative = function<T, K>(): NumberFieldValidationBuilder<T, K> {
     const builder = this as NumberFieldValidationBuilder<T, K>
-    return builder.check((_, __, value) => Number(value) < 0, "value isn't positive")
+    return builder.check((_, __, value) => Number(value) < 0, "$name: $value isn't negative")
 }
 
 NumberFieldValidationBuilder.prototype.isZero = function<T, K>(): NumberFieldValidationBuilder<T, K> {
     const builder = this as NumberFieldValidationBuilder<T, K>
-    return builder.check((_, __, value) => Number(value) === 0, "value isn't positive")
+    return builder.check((_, __, value) => Number(value) === 0, "$name: $value isn't zero")
 }
 
 NumberFieldValidationBuilder.prototype.isInteger = function<T, K>(): NumberFieldValidationBuilder<T, K> {

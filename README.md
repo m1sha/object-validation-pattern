@@ -3,10 +3,6 @@
 
 # Object Validation Pattern
 
-⚠️ Waring!!! ⚠️
-
-The library is in active development and has a lot of bugs. Use it for informational purposes only.
-
 ## Usage
 
 Create a DTO class

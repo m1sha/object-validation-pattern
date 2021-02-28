@@ -22,12 +22,12 @@ interface SignUpDTO {
 Create a validator for the DTO class
 
 ```typescript
-class SignUpValidator extends ObjectValidator<SignUpModel> {
+class SignUpValidator extends ObjectValidator<SignUpDTO> {
     constructor(state: ObjectState) {
         super(state)
     }
 
-    setRules(rules: RulesBuilder<TestDTO>): void { 
+    setRules(rules: RulesBuilder<SignUpDTO>): void { 
         rules
             .add("name")
             .isString()

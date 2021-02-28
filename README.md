@@ -35,7 +35,7 @@ class SignUpValidator extends ObjectValidator<SignUpModel> {
             .breakChain()
             .checkAsync(async (_, __, name) => 
                 !(await userService.userExists(name)),
-                "user already exists")
+                "$name: The user $value already exists")
 
         rules
             .add("email")

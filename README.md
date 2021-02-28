@@ -3,23 +3,25 @@
 
 # Object Validation Pattern
 
+⚠️ Waring!!! ⚠️
+
+The library is in active development and has a lot of bugs. Use it for informational purposes only.
+
 ## Usage
 
+Create a DTO class
 ```typescript
-import { 
-    ObjectValidator, 
-    RulesBuilder, 
-    StateObject 
-} from "object-validator-pattern"
-import "object-validator-pattern/lib/extensions"
-
-interface SignUpModel {
+interface SignUpDTO {
     name: string
     email: string
     password: string
     confirmPassword: string
 }
+```
 
+Create a validator for the DTO class
+
+```typescript
 class SignUpValidator extends ObjectValidator<SignUpModel> {
     constructor(state: ObjectState) {
         super(state)
@@ -60,9 +62,11 @@ class SignUpValidator extends ObjectValidator<SignUpModel> {
            
     }
 }
+```
 
-...
 
+Create an instance is implemented by the SignUpDTO interface and define the StateObject and the Validator instances
+```typescript
 const model = {
     name: "User name",
     email: "username@someexampleserver.com",
@@ -72,7 +76,10 @@ const model = {
 
 const modelState = new StateObject()
 const validator = new SignUpValidator(modelState)
+```
 
+Execute somewhere in a code
+```typescript
 async function validate() {
     await validator.validate(model) 
 
@@ -84,9 +91,10 @@ async function validate() {
     console.log(modelState.isValid) 
     console.log(modelState.items) 
 }
-/*
-Output:
+```
 
+Output:
+```bash
 false
 [
     "confirmPassword": [
@@ -97,10 +105,9 @@ false
         }
     ]
 ]
-
-*/
 ```
 
-## How can I do custom validation extension
+## Custom validation extension
 
-[Custom validation extension](docs/CustomExtensions.md)
+1. use an import "object-validator-pattern/lib/extensions"
+2. [How can I do custom validation extension](docs/CustomExtensions.md)

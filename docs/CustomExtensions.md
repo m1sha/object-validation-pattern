@@ -15,3 +15,5 @@ StringValidationBuilder.prototype.isUrl = function<T, K>(message?: string): Stri
     return builder.check((_, __, value) => isURL(value), message || "$name: $value isn't an url")
 }
 ```
+
+The function isURL in the example used a library [validator.js](https://www.npmjs.com/package/validator)

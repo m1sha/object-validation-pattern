@@ -56,4 +56,14 @@ test("compare test", async ()=>{
     validator = new TestObjectValidator(stateModal, "notEquals")
     await validator.validateField({name: "", value: 0}, "name")
     expect(stateModal.getValue("name").valid).toBeFalsy()
+
+    try{
+        stateModal.clear()
+        const operationName = "foo"
+        validator = new TestObjectValidator(stateModal, operationName as CompareType)
+        await validator.validateField({name: "", value: 0}, "name")
+    }
+    catch(e){
+        if (e instanceof Error) expect(e.message).toEqual("Compare. operation isn't found")
+    }
 })

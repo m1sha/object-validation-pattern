@@ -341,7 +341,7 @@ const compare = (obj1: unknown, obj2: unknown, type: CompareType): boolean => {
     ()=> obj1 <=  obj2
   ]
   const index = operationNames.indexOf(type)
-  if (index === -1) throw new Error("compare. operation isn't found")
+  if (index === -1) throw new Error("Compare. operation isn't found")
   return operationList[index]()
 }
 

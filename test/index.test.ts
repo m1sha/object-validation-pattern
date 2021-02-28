@@ -2,6 +2,7 @@ import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
 
 interface TestData {
     name: string
+    empty: string
     value: number
     values: string[]
     // inner: TestDTO
@@ -26,15 +27,10 @@ class TestObjectValidator extends ObjectValidator<TestData> {
             .isNumber()
             .range(5, 10)
 
-        // rules
-        //     .add("values")
-        //     .isArray()
-        //     .forElement(p => p.string().maxLength(12))
-
-        // rules
-        //     .add("inner")
-        //     .isEntity()
-        //     .use(TestObjectValidator)
+        rules
+            .add("empty")
+            .isString()
+            .empty()
     }
 }
 
@@ -42,7 +38,8 @@ test("validator test", async () => {
     const entity = {
         name:  "",
         value:  5,
-        values: []
+       values: [],
+         empty: ""
     }
 
     const state = new StateObject()
@@ -56,6 +53,7 @@ test("validator test", async () => {
 test("validator test good", async () => {
     const entity = {
         name:  "dd222",
+        empty: "",
         value:  5,
         values: []
     }
@@ -69,6 +67,7 @@ test("validator test good", async () => {
 test("validatorField test", async ()=>{
     const entity = {
         name:  "name",
+        empty: "",
         value:  500,
         values: []
     }
@@ -82,6 +81,7 @@ test("validatorField test", async ()=>{
 test("validatorField test", async ()=>{
     const entity = {
         name:  "nameNameName",
+        empty: "",
         value:  500,
         values: []
     }

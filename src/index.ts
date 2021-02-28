@@ -137,12 +137,10 @@ export class StateObject { // TODO StateObject<T>
 
   clear(): void {
     for (const key in this.items) {
-      if ({}.hasOwnProperty.call(this.items, key)) {
+      if ({}.hasOwnProperty.call(this.items, key)){
         const item = this.items[key]
-        if (item instanceof StateItem) {
-          item.valid = undefined
-          item.text = ''
-        }
+        item.valid = undefined
+        item.text = ''
       }
     }
   }

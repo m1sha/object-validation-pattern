@@ -16,7 +16,7 @@ class TestValidator extends ObjectValidator<TestData> {
 }
 
 test("array member test", async () => {
-    const stateModal = new StateObject()
+    const stateModal = new StateObject<TestData>()
     const validator = new TestValidator(stateModal)
     await validator.validate({value: {name: "name", value: 1}})
     expect(true).toBeTruthy()

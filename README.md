@@ -19,7 +19,7 @@ Create a validator for the DTO class
 
 ```typescript
 class SignUpValidator extends ObjectValidator<SignUpDTO> {
-    constructor(state: ObjectState) {
+    constructor(state: ObjectState<SignUpDTO>) {
         super(state)
     }
 
@@ -70,7 +70,7 @@ const model = {
     confirmPassword: "passw0rd"
 }
 
-const modelState = new StateObject()
+const modelState = new StateObject<SignUpDTO>()
 const validator = new SignUpValidator(modelState)
 ```
 

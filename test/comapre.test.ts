@@ -8,7 +8,7 @@ interface TestData {
 
 class TestObjectValidator extends ObjectValidator<TestData> {
     private comparer: CompareType
-    constructor(state: StateObject, comparer: CompareType){
+    constructor(state: StateObject<TestData>, comparer: CompareType){
         super(state)
         this.comparer = comparer
     }
@@ -22,7 +22,7 @@ class TestObjectValidator extends ObjectValidator<TestData> {
 }
 
 test("compare test", async ()=>{
-    const stateModal = new StateObject()
+    const stateModal = new StateObject<TestData>()
     let validator = new TestObjectValidator(stateModal, "equals")
     await validator.validateField({name: "", value: 0}, "name")
     expect(stateModal.getValue("name").valid).toBeTruthy()

@@ -9,7 +9,7 @@ interface TestData {
 }
 
 class TestObjectValidator extends ObjectValidator<TestData> {
-    constructor(state: StateObject){
+    constructor(state: StateObject<TestData>){
         super(state)
     }
 
@@ -42,7 +42,7 @@ test("validator test", async () => {
          empty: ""
     }
 
-    const state = new StateObject()
+    const state = new StateObject<TestData>()
     const validator = new TestObjectValidator(state)
     await validator.validate(entity)
     expect(state.getValue("name")).toEqual({ valid: false, text: "name: is empty" })
@@ -58,7 +58,7 @@ test("validator test good", async () => {
         values: []
     }
 
-    const state = new StateObject()
+    const state = new StateObject<TestData>()
     const validator = new TestObjectValidator(state)
     await validator.validate(entity)
     expect(state.isValid()).toBeTruthy()
@@ -72,7 +72,7 @@ test("validatorField test", async ()=>{
         values: []
     }
 
-    const state = new StateObject()
+    const state = new StateObject<TestData>()
     const validator = new TestObjectValidator(state)
     await validator.validateField(entity, "name")
     expect(state.getValue("name").valid).toBeTruthy()
@@ -86,7 +86,7 @@ test("validatorField test", async ()=>{
         values: []
     }
 
-    const state = new StateObject()
+    const state = new StateObject<TestData>()
     const validator = new TestObjectValidator(state)
     await validator.validateField(entity, "name")
     expect(state.getValue("name").valid).toBeFalsy()

@@ -174,9 +174,9 @@ export class StateObject<T> { // TODO StateObject<T>
   }
 }
 
-export type FieldValidationCallback<T, K, V> = (obj: T, key: K, value: V) => boolean
-export type FieldValidationCallbackAsync<T, K, V> = (obj: T, key: K, value: V) => Promise<boolean>
-abstract class FieldValidationBuilder<T, K> {
+export type FieldValidationCallback<T, K extends keyof T> = (obj: T, key: K, value: T[K]) => boolean
+export type FieldValidationCallbackAsync<T, K extends keyof T> = (obj: T, key: K, value: T[K]) => Promise<boolean>
+abstract class FieldValidationBuilder<T, K extends keyof T> {
   protected readonly fieldName: K
   protected readonly validatorState: ValidatorState<T>
   fieldNameString(): string {
@@ -188,16 +188,16 @@ abstract class FieldValidationBuilder<T, K> {
     this.validatorState = validator
   }
 
-  check<V>(action: FieldValidationCallback<T, K, V>, message: string): this {
+  check(action: FieldValidationCallback<T, K>, message: string): this {
     const { item, stack } = this.validatorState
-    const value = item[this.fieldName] as V
+    const value = item[this.fieldName] as T[K]
     stack.push(new RuleStackItem(this.fieldNameString(), () => action(item as T, this.fieldName, value), message))
     return this
   }
 
-  checkAsync<V>(action: FieldValidationCallbackAsync<T, K, V>, message: string): this {
+  checkAsync<V>(action: FieldValidationCallbackAsync<T, K>, message: string): this {
     const { item, stack } = this.validatorState
-    const value = item[this.fieldName] as V
+    const value = item[this.fieldName] as T[K]
     stack.push(new RuleStackItem(this.fieldNameString(), async () => await action(item as T, this.fieldName, value), message))
     return this
   }
@@ -229,7 +229,7 @@ abstract class FieldValidationBuilder<T, K> {
   }
 }
 
-export class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+export class StringFieldValidationBuilder<T, K extends keyof T> extends FieldValidationBuilder<T, K> {
   constructor(field: K, validator: ValidatorState<T>) {
     super(field, validator)
   }
@@ -251,7 +251,7 @@ export class StringFieldValidationBuilder<T, K> extends FieldValidationBuilder<T
   }
 }
 
-export class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+export class NumberFieldValidationBuilder<T, K extends keyof T> extends FieldValidationBuilder<T, K> {
   constructor(field: K, validator: ValidatorState<T>) {
     super(field, validator)
   }
@@ -270,8 +270,8 @@ export class NumberFieldValidationBuilder<T, K> extends FieldValidationBuilder<T
   }
 }
 
-export type ForElementCallback<T, K> = (caseTypes: CaseTypes<T, K>) => void
-export class ArrayFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+export type ForElementCallback<T, K extends keyof T> = (caseTypes: CaseTypes<T, K>) => void
+export class ArrayFieldValidationBuilder<T, K extends keyof T> extends FieldValidationBuilder<T, K> {
   constructor(field: K, validator: ValidatorState<T>) {
     super(field, validator)
   }
@@ -282,7 +282,7 @@ export class ArrayFieldValidationBuilder<T, K> extends FieldValidationBuilder<T,
   }
 }
 
-export class EntityFieldValidationBuilder<T, K> extends FieldValidationBuilder<T, K> {
+export class EntityFieldValidationBuilder<T, K extends keyof T> extends FieldValidationBuilder<T, K> {
   constructor(field: K, validator: ValidatorState<T>) {
     super(field, validator)
   }
@@ -294,7 +294,7 @@ export class EntityFieldValidationBuilder<T, K> extends FieldValidationBuilder<T
   // }
 }
 
-export class CaseTypes<T, K> {
+export class CaseTypes<T, K extends keyof T> {
   private readonly field: K
   private validatorState: ValidatorState<T>
   constructor(field: K, validator: ValidatorState<T>) {

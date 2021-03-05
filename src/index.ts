@@ -195,7 +195,7 @@ abstract class FieldValidationBuilder<T, K extends keyof T> {
     return this
   }
 
-  checkAsync<V>(action: FieldValidationCallbackAsync<T, K>, message: string): this {
+  checkAsync(action: FieldValidationCallbackAsync<T, K>, message: string): this {
     const { item, stack } = this.validatorState
     const value = item[this.fieldName] as T[K]
     stack.push(new RuleStackItem(this.fieldNameString(), async () => await action(item as T, this.fieldName, value), message))

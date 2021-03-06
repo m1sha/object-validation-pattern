@@ -1,41 +1,41 @@
-import { StringFieldValidationBuilder, NumberFieldValidationBuilder } from "./index"
+import { StringValidationBuilder, NumberValidationBuilder } from "./validation-builder"
 
-declare module "./index" {
-    interface StringFieldValidationBuilder<T, K> {
-        isEmail(): StringFieldValidationBuilder<T, K>
+declare module "./validation-builder" {
+    interface StringValidationBuilder<T, K> {
+        isEmail(): StringValidationBuilder<T, K>
     }
 
-    interface NumberFieldValidationBuilder<T, K> {
-        isPositive(): NumberFieldValidationBuilder<T, K>
-        isNegative(): NumberFieldValidationBuilder<T, K>
-        isZero(): NumberFieldValidationBuilder<T, K>
-        isInteger(): NumberFieldValidationBuilder<T, K>
+    interface NumberValidationBuilder<T, K> {
+        isPositive(): NumberValidationBuilder<T, K>
+        isNegative(): NumberValidationBuilder<T, K>
+        isZero(): NumberValidationBuilder<T, K>
+        isInteger(): NumberValidationBuilder<T, K>
     }
 }
 
-StringFieldValidationBuilder.prototype.isEmail = function<T, K>(): StringFieldValidationBuilder<T,K> {
-   const builder = this as StringFieldValidationBuilder<T, K>
+StringValidationBuilder.prototype.isEmail = function<T, K extends keyof T>(): StringValidationBuilder<T,K> {
+   const builder = this as StringValidationBuilder<T, K>
    return builder.check((_, __, value) =>
     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i
     .test(String(value)), "$name: $value isn't email")
 }
 
-NumberFieldValidationBuilder.prototype.isPositive = function<T, K>(): NumberFieldValidationBuilder<T, K> {
-    const builder = this as NumberFieldValidationBuilder<T, K>
+NumberValidationBuilder.prototype.isPositive = function<T, K extends keyof T>(): NumberValidationBuilder<T, K> {
+    const builder = this as NumberValidationBuilder<T, K>
     return builder.check((_, __, value) => Number(value) > 0, "$name: $value isn't positive")
 }
 
-NumberFieldValidationBuilder.prototype.isNegative = function<T, K>(): NumberFieldValidationBuilder<T, K> {
-    const builder = this as NumberFieldValidationBuilder<T, K>
+NumberValidationBuilder.prototype.isNegative = function<T, K extends keyof T>(): NumberValidationBuilder<T, K> {
+    const builder = this as NumberValidationBuilder<T, K>
     return builder.check((_, __, value) => Number(value) < 0, "$name: $value isn't negative")
 }
 
-NumberFieldValidationBuilder.prototype.isZero = function<T, K>(): NumberFieldValidationBuilder<T, K> {
-    const builder = this as NumberFieldValidationBuilder<T, K>
+NumberValidationBuilder.prototype.isZero = function<T, K extends keyof T>(): NumberValidationBuilder<T, K> {
+    const builder = this as NumberValidationBuilder<T, K>
     return builder.check((_, __, value) => Number(value) === 0, "$name: $value isn't zero")
 }
 
-NumberFieldValidationBuilder.prototype.isInteger = function<T, K>(): NumberFieldValidationBuilder<T, K> {
-    const builder = this as NumberFieldValidationBuilder<T, K>
+NumberValidationBuilder.prototype.isInteger = function<T, K extends keyof T>(): NumberValidationBuilder<T, K> {
+    const builder = this as NumberValidationBuilder<T, K>
     return builder.check((_, __, value) => Number.isInteger(value), "value isn't positive")
 }

@@ -1,4 +1,6 @@
-import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
+import { ObjectValidator } from '../src/object-validator'
+import { RulesBuilder } from '../src/rules-builder'
+import { StateModel } from "../src/state-model"
 import "../src/extensions"
 
 interface TestData{
@@ -16,14 +18,14 @@ class TestDataValidator extends ObjectValidator<TestData>{
 }
 
 test("value should be valid", async ()=>{
-    const stateModel = new StateObject<TestData>()
+    const stateModel = new StateModel<TestData>()
     const validator = new TestDataValidator(stateModel)
     await validator.validate({negative: -1, positive: 1, zero: 0})
     expect(stateModel.isValid()).toBeTruthy()
 })
 
 test("value should be not valid", async ()=>{
-    const stateModel = new StateObject<TestData>()
+    const stateModel = new StateModel<TestData>()
     const validator = new TestDataValidator(stateModel)
     await validator.validate({negative: .1, positive: -1, zero: 2})
     expect(stateModel.isValid()).toBeFalsy()

@@ -1,4 +1,6 @@
-import { ObjectValidator, RulesBuilder, StateObject, } from '../src/index'
+import { ObjectValidator } from '../src/object-validator'
+import { RulesBuilder } from '../src/rules-builder'
+import { StateModel } from "../src/state-model"
 
 interface TestData {
     value: number[]
@@ -13,7 +15,7 @@ class TestValidator extends ObjectValidator<TestData> {
 }
 
 test("array member test", async () => {
-    const stateModal = new StateObject<TestData>()
+    const stateModal = new StateModel<TestData>()
     const validator = new TestValidator(stateModal)
     await validator.validate({value: [1, 2, 4]})
     expect(true).toBeTruthy()

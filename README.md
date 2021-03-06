@@ -3,11 +3,11 @@
 
 # Object Validation Pattern
 
-## Usage
+## Simplest Usage
 
-Create a DTO class
+Create a class for an entity, for example like that's that below
 ```typescript
-interface SignUpDTO {
+interface SignUp {
     name: string
     email: string
     password: string
@@ -15,32 +15,25 @@ interface SignUpDTO {
 }
 ```
 
-Create a validator for the DTO class
+Create a class that'll contain validation scheme for the entity class
 
 ```typescript
-class SignUpValidator extends ObjectValidator<SignUpDTO> {
-    constructor(state: ObjectState<SignUpDTO>) {
-        super(state)
-    }
-
-    setRules(rules: RulesBuilder<SignUpDTO>): void { 
+class SignUpValidator extends ObjectValidator<SignUp> {
+    setRules(rules: RulesBuilder<SignUp>): void { 
         rules
             .add("name")
             .isString()
             .notEmpty()
-            .breakChain()
             .minLength(3)
             .maxLength(10)
-            .breakChain()
-            .checkAsync(async (_, __, name) => 
-                !(await userService.userExists(name)),
-                "$name: The user $value already exists")
+            .checkAsync(async (_, __, value) => 
+                !(await userService.userExists(value)),
+                "$name: The user name $value is already exists")
 
         rules
             .add("email")
             .isString()
             .notEmpty()
-            .breakChain()
             .isEmail()
         
         rules
@@ -52,16 +45,14 @@ class SignUpValidator extends ObjectValidator<SignUpDTO> {
             .add("confirmPassword")
             .isString()
             .notEmpty()
-            .breakChain()
             .compareWithField("password", "equal", 
                 "The password and the confirm password fields are not same")
-           
     }
 }
 ```
 
 
-Create an instance is implemented by the SignUpDTO interface and define the StateObject and the Validator instances
+Create an instance is implemented by the SignUp interface and define the StateModel and the Validator instances
 ```typescript
 const model = {
     name: "User name",
@@ -70,37 +61,28 @@ const model = {
     confirmPassword: "passw0rd"
 }
 
-const modelState = new StateObject<SignUpDTO>()
-const validator = new SignUpValidator(modelState)
+const stateModel = new StateModel<SignUp>()
+const validator = new SignUpValidator(stateModel)
 ```
 
 Execute somewhere in a code
 ```typescript
 async function validate() {
-    await validator.validate(model) 
-
-    /*
-    * or for the the field you can use 
-    * await validator.validateField(model, "confirmPassword")
-    */
-
-    console.log(modelState.isValid) 
-    console.log(modelState.items) 
+    // For validate the whole model: await validator.validate(model) 
+    await validator.validateField(model, "confirmPassword")
+    console.log(stateModel.isValid) 
+    console.log(stateModel.getItem("confirmPassword")) 
 }
 ```
 
 Output:
 ```bash
 false
-[
-    "confirmPassword": [
-        ...
-        { 
-            "valid": false, 
-            "text": "The password and the confirm password fields are not same"
-        }
-    ]
-]
+
+{ 
+    "valid": false, 
+    "text": "The password and the confirm password fields are not same"
+}
 ```
 
 ## Custom validation extension

@@ -1,15 +1,18 @@
-import { ObjectValidator, RulesBuilder, StateObject } from '../src/index'
+import { ObjectValidator } from '../src/object-validator'
+import { RulesBuilder } from '../src/rules-builder'
+import { StateModel } from "../src/state-model"
 
 interface TestData {
     name: string
     empty: string
     value: number
     values: string[]
+    date: Date
     // inner: TestDTO
 }
 
 class TestObjectValidator extends ObjectValidator<TestData> {
-    constructor(state: StateObject<TestData>){
+    constructor(state: StateModel<TestData>){
         super(state)
     }
 
@@ -31,6 +34,10 @@ class TestObjectValidator extends ObjectValidator<TestData> {
             .add("empty")
             .isString()
             .empty()
+
+        rules
+            .add("date")
+            .isDateTime()
     }
 }
 
@@ -39,10 +46,11 @@ test("validator test", async () => {
         name:  "",
         value:  5,
        values: [],
-         empty: ""
+         empty: "",
+         date: new Date()
     }
 
-    const state = new StateObject<TestData>()
+    const state = new StateModel<TestData>()
     const validator = new TestObjectValidator(state)
     await validator.validate(entity)
     expect(state.getValue("name")).toEqual({ valid: false, text: "name: is empty" })
@@ -55,10 +63,11 @@ test("validator test good", async () => {
         name:  "dd222",
         empty: "",
         value:  5,
-        values: []
+        values: [],
+        date: new Date()
     }
 
-    const state = new StateObject<TestData>()
+    const state = new StateModel<TestData>()
     const validator = new TestObjectValidator(state)
     await validator.validate(entity)
     expect(state.isValid()).toBeTruthy()
@@ -69,10 +78,11 @@ test("validatorField test", async ()=>{
         name:  "name",
         empty: "",
         value:  500,
-        values: []
+        values: [],
+        date: new Date()
     }
 
-    const state = new StateObject<TestData>()
+    const state = new StateModel<TestData>()
     const validator = new TestObjectValidator(state)
     await validator.validateField(entity, "name")
     expect(state.getValue("name").valid).toBeTruthy()
@@ -83,10 +93,11 @@ test("validatorField test", async ()=>{
         name:  "nameNameName",
         empty: "",
         value:  500,
-        values: []
+        values: [],
+        date: new Date()
     }
 
-    const state = new StateObject<TestData>()
+    const state = new StateModel<TestData>()
     const validator = new TestObjectValidator(state)
     await validator.validateField(entity, "name")
     expect(state.getValue("name").valid).toBeFalsy()

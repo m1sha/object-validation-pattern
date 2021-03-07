@@ -1,7 +1,7 @@
-import {ValidationQueue, RuleQueueItem } from "./validation-queue"
-import { StateModel } from "./state-model"
-import { ValidationState } from "./validation-state"
-import { RulesBuilder } from "./rules-builder"
+import { ValidationQueue, RuleQueueItem } from './validation-queue'
+import { StateModel } from './state-model'
+import { ValidationState } from './validation-state'
+import { RulesBuilder } from './rules-builder'
 
 type ValidateFieldCallback = (fieldName: string) => boolean
 
@@ -12,8 +12,8 @@ export abstract class ObjectValidator<T> {
   constructor(stateModel: StateModel<T>) {
     this.validationState = {
       stateModel,
-      queue : new ValidationQueue(),
-      target: undefined
+      queue: new ValidationQueue(),
+      target: undefined,
     }
     this.isInit = false
   }
@@ -37,9 +37,9 @@ export abstract class ObjectValidator<T> {
   private async checkValid(obj: T, callback?: ValidateFieldCallback): Promise<void> {
     if (!this.isInit) this.init()
     this.validationState.target = obj
-    while(true){
+    while (true) {
       const result = this.validationState.queue.pop()
-      if (!result){
+      if (!result) {
         break
       }
 
@@ -48,7 +48,7 @@ export abstract class ObjectValidator<T> {
         continue
       }
 
-      for(const item of items){
+      for (const item of items) {
         if (item instanceof RuleQueueItem) {
           const valid = await this.validateRule(item)
           if (!valid) {
@@ -59,17 +59,15 @@ export abstract class ObjectValidator<T> {
     }
   }
 
-  private async validateRule(item: RuleQueueItem): Promise<boolean>{
+  private async validateRule(item: RuleQueueItem): Promise<boolean> {
     const valid = await item.result()
     const target = this.validationState.target
-    const text =  valid ? "" : format(item.message, target, item.key, target[item.key])
+    const text = valid ? '' : format(item.message, target, item.key, target[item.key])
     this.validationState.stateModel.getValueInternal(item.key).setValue(valid, text)
     return valid
   }
 }
 
-const format = <T>(message: string, obj:T, key: string, value: unknown): string =>{
-  return message
-    .replace(/\$name/, key)
-    .replace(/\$value/, value ? value.toString(): "undefined")
+const format = <T>(message: string, obj: T, key: string, value: unknown): string => {
+  return message.replace(/\$name/, key).replace(/\$value/, value ? value.toString() : 'undefined')
 }

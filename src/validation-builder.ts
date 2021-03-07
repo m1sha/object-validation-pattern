@@ -1,6 +1,6 @@
-import { TypeResolver } from "./rules-builder"
-import { BlockQueueItem, RuleQueueItem } from "./validation-queue"
-import { ValidationState } from "./validation-state"
+import { TypeResolver } from './rules-builder'
+import { BlockQueueItem, RuleQueueItem } from './validation-queue'
+import { ValidationState } from './validation-state'
 
 export type ValidationCallback<T, K extends keyof T> = (obj: T, key: K, value: T[K]) => boolean
 export type ValidationCallbackAsync<T, K extends keyof T> = (obj: T, key: K, value: T[K]) => Promise<boolean>
@@ -27,8 +27,8 @@ abstract class ValidationBuilder<T, K extends keyof T> {
           const value = target[this.fieldName]
           return action(target, this.fieldName, value)
         },
-        message
-      )
+        message,
+      ),
     )
     return this
   }
@@ -42,8 +42,8 @@ abstract class ValidationBuilder<T, K extends keyof T> {
           const value = target[this.fieldName]
           return await action(target, this.fieldName, value)
         },
-        message
-      )
+        message,
+      ),
     )
     return this
   }
@@ -53,7 +53,7 @@ abstract class ValidationBuilder<T, K extends keyof T> {
   }
 
   fieldIs<K2 extends keyof T>(fieldName: K2, comparer: CompareType, value?: T[K2], message?: string) {
-    return this.check(obj => compare(value, obj[fieldName], comparer), message)
+    return this.check((obj) => compare(value, obj[fieldName], comparer), message)
   }
 
   break(): this {
@@ -73,7 +73,7 @@ export class StringValidationBuilder<T, K extends keyof T> extends ValidationBui
   }
 
   notEmpty(message?: string): this {
-    return this.check((_, __, value) => !!value, message || "$name: is empty")
+    return this.check((_, __, value) => !!value, message || '$name: is empty')
   }
 
   empty(message?: string): this {
@@ -81,11 +81,11 @@ export class StringValidationBuilder<T, K extends keyof T> extends ValidationBui
   }
 
   maxLength(num: number, message?: string): this {
-    return this.check((_, __, value) => String(value).length <= num , message || `$name: isn't empty`)
+    return this.check((_, __, value) => String(value).length <= num, message || `$name: isn't empty`)
   }
 
   minLength(num: number, message?: string): this {
-    return this.check((_, __, value) => String(value).length >= num , message || `$name: isn't empty`)
+    return this.check((_, __, value) => String(value).length >= num, message || `$name: isn't empty`)
   }
 }
 
@@ -95,7 +95,7 @@ export class NumberValidationBuilder<T, K extends keyof T> extends ValidationBui
   }
 
   range(start: number, end: number, message?: string): this {
-    this.check((_,__,value)=> Number(value) >= start && Number(value) <= end, message)
+    this.check((_, __, value) => Number(value) >= start && Number(value) <= end, message)
     return this
   }
 }
@@ -125,28 +125,28 @@ export class EntityValidationBuilder<T, K extends keyof T> extends ValidationBui
 }
 
 export class DateTimeValidationBuilder<T, K extends keyof T> extends ValidationBuilder<T, K> {
-    constructor(field: K, validationState: ValidationState<T>) {
-      super(field, validationState)
-    }
+  constructor(field: K, validationState: ValidationState<T>) {
+    super(field, validationState)
+  }
 
-    // use<TValidator extends ObjectValidator<T>>(type: new (state: StateObject) => TValidator): this {
-    //   // const state = new StateObject()
-    //   // new type(state).validate(this.validatorState.item as T)
-    //   return this
-    // }
+  // use<TValidator extends ObjectValidator<T>>(type: new (state: StateObject) => TValidator): this {
+  //   // const state = new StateObject()
+  //   // new type(state).validate(this.validatorState.item as T)
+  //   return this
+  // }
 }
 
-const operationNames = ["equals", "notEquals", "weakEquals", "more", "less", "moreOrEquals", "lessOrEquals" ] as const
+const operationNames = ['equals', 'notEquals', 'weakEquals', 'more', 'less', 'moreOrEquals', 'lessOrEquals'] as const
 export type CompareType = typeof operationNames[number]
 const compare = (obj1: unknown, obj2: unknown, type: CompareType): boolean => {
   const operationList = [
-    ()=> obj1 === obj2,
-    ()=> obj1 !== obj2,
-    ()=> obj1 ==  obj2, // eslint-disable-line eqeqeq
-    ()=> obj1 >   obj2,
-    ()=> obj1 <   obj2,
-    ()=> obj1 >=  obj2,
-    ()=> obj1 <=  obj2
+    () => obj1 === obj2,
+    () => obj1 !== obj2,
+    () => obj1 == obj2, // eslint-disable-line eqeqeq
+    () => obj1 > obj2,
+    () => obj1 < obj2,
+    () => obj1 >= obj2,
+    () => obj1 <= obj2,
   ]
   const index = operationNames.indexOf(type)
   if (index === -1) throw new Error("Compare. operation isn't found")

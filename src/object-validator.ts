@@ -37,6 +37,7 @@ export abstract class ObjectValidator<T> {
   private async checkValid(obj: T, callback?: ValidateFieldCallback): Promise<void> {
     if (!this.isInit) this.init()
     this.validationState.target = obj
+    this.validationState.queue.reset()
     while (true) {
       const result = this.validationState.queue.pop()
       if (!result) {

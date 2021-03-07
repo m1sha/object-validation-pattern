@@ -30,6 +30,10 @@ export class ValidationQueue {
       items: this.items[this.names[this.index++]],
     }
   }
+
+  reset(): void {
+    this.index = 0
+  }
 }
 
 export class BlockQueueItem implements QueueItem {
@@ -57,15 +61,12 @@ export class RuleQueueItem implements QueueItem {
   }
 
   async result(): Promise<boolean> {
-    if (this.done === undefined || typeof this.done === 'undefined') {
-      const result = this.callback()
-      if (result instanceof Promise) {
-        this.done = await result
-      }
-
-      if (typeof result === 'boolean') {
-        this.done = result
-      }
+    const result = this.callback()
+    if (result instanceof Promise) {
+      this.done = await result
+    }
+    if (typeof result === 'boolean') {
+      this.done = result
     }
 
     return this.done

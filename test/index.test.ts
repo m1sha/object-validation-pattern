@@ -39,8 +39,8 @@ test('validator test', async () => {
   const state = new StateModel<TestData>()
   const validator = new TestObjectValidator(state)
   await validator.validate(entity)
-  expect(state.getValue('name')).toEqual({ valid: false, text: 'name: is empty' })
-  expect(state.getValue('value')).toEqual({ valid: true, text: '' })
+  expect(state.getItem('name')).toEqual({ valid: false, text: 'name: is empty' })
+  expect(state.getItem('value')).toEqual({ valid: true, text: '' })
   expect(state.isValid()).toBeFalsy()
 })
 
@@ -71,10 +71,10 @@ test('validatorField test', async () => {
   const state = new StateModel<TestData>()
   const validator = new TestObjectValidator(state)
   await validator.validateField(entity, 'name')
-  expect(state.getValue('name').valid).toBeTruthy()
+  expect(state.getItem('name').valid).toBeTruthy()
 })
 
-test('validatorField test', async () => {
+test('validatorField test 2', async () => {
   const entity = {
     name: 'nameNameName',
     empty: '',
@@ -86,5 +86,5 @@ test('validatorField test', async () => {
   const state = new StateModel<TestData>()
   const validator = new TestObjectValidator(state)
   await validator.validateField(entity, 'name')
-  expect(state.getValue('name').valid).toBeFalsy()
+  expect(state.getItem('name').valid).toBeFalsy()
 })

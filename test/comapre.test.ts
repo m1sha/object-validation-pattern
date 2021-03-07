@@ -24,37 +24,37 @@ test('compare test', async () => {
   const stateModal = new StateModel<TestData>()
   let validator = new TestObjectValidator(stateModal, 'equals')
   await validator.validateField({ name: '', value: 0 }, 'name')
-  expect(stateModal.getValue('name').valid).toBeTruthy()
+  expect(stateModal.getItem('name').valid).toBeTruthy()
 
   stateModal.clear()
   validator = new TestObjectValidator(stateModal, 'weakEquals')
   await validator.validateField({ name: '', value: 0 }, 'name')
-  expect(stateModal.getValue('name').valid).toBeTruthy()
+  expect(stateModal.getItem('name').valid).toBeTruthy()
 
   stateModal.clear()
   validator = new TestObjectValidator(stateModal, 'moreOrEquals')
   await validator.validateField({ name: '', value: 0 }, 'name')
-  expect(stateModal.getValue('name').valid).toBeTruthy()
+  expect(stateModal.getItem('name').valid).toBeTruthy()
 
   stateModal.clear()
   validator = new TestObjectValidator(stateModal, 'lessOrEquals')
   await validator.validateField({ name: '', value: 0 }, 'name')
-  expect(stateModal.getValue('name').valid).toBeTruthy()
+  expect(stateModal.getItem('name').valid).toBeTruthy()
 
   stateModal.clear()
   validator = new TestObjectValidator(stateModal, 'less')
   await validator.validateField({ name: '', value: 0 }, 'name')
-  expect(stateModal.getValue('name').valid).toBeFalsy()
+  expect(stateModal.getItem('name').valid).toBeFalsy()
 
   stateModal.clear()
   validator = new TestObjectValidator(stateModal, 'more')
   await validator.validateField({ name: '', value: 0 }, 'name')
-  expect(stateModal.getValue('name').valid).toBeFalsy()
+  expect(stateModal.getItem('name').valid).toBeFalsy()
 
   stateModal.clear()
   validator = new TestObjectValidator(stateModal, 'notEquals')
   await validator.validateField({ name: '', value: 0 }, 'name')
-  expect(stateModal.getValue('name').valid).toBeFalsy()
+  expect(stateModal.getItem('name').valid).toBeFalsy()
 
   try{
       stateModal.clear()

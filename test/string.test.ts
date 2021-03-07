@@ -10,15 +10,15 @@ test('empty value', async () => {
 
   await validator.validate(model)
   expect(stateModel.isValid()).toBeFalsy()
-  expect(stateModel.getValue("name").text).toEqual("name: is empty")
+  expect(stateModel.getItem("name").text).toEqual("name: is empty")
 
   model.name = "name"
   await validator.validate(model)
   expect(stateModel.isValid()).toBeTruthy()
-  expect(stateModel.getValue("name").text).toEqual("")
+  expect(stateModel.getItem("name").text).toEqual("")
 
   model.name = "123456"
   await validator.validate(model)
   expect(stateModel.isValid()).toBeFalsy()
-  expect(stateModel.getValue("name").text).toEqual("name: max length is 5")
+  expect(stateModel.getItem("name").text).toEqual("name: max length is 5")
 })

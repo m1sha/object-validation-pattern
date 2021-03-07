@@ -36,7 +36,7 @@ export class StateModel<T> {
     return true
   }
 
-  getValue<K extends keyof T>(name: K): StateItem | null {
+  getItem<K extends keyof T>(name: K): StateItem | null {
     return this.items[name as string]
   }
 

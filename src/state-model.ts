@@ -20,12 +20,11 @@ export class StateModel<T> {
   }
 
   clear(): void {
-    for (const key in this.items) {
-      if ({}.hasOwnProperty.call(this.items, key)) {
+    const keys = Object.keys(this.items)
+    for (const key of keys) {
         const item = this.items[key]
         item.valid = undefined
         item.text = ''
-      }
     }
   }
 

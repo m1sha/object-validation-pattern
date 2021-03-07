@@ -5,74 +5,44 @@
 
 ## Simplest Usage
 
-Create a class for an entity, for example like that's that below
 ```typescript
 interface SignUp {
-    name: string
-    email: string
-    password: string
-    confirmPassword: string
-}
-```
-
-Create a class that'll contain validation scheme for the entity class
-
-```typescript
-class SignUpValidator extends ObjectValidator<SignUp> {
-    setRules(rules: RulesBuilder<SignUp>): void { 
-        rules
-            .add("name")
-            .isString()
-            .notEmpty()
-            .minLength(3)
-            .maxLength(10)
-            .checkAsync(async (_, __, value) => 
-                !(await userService.userExists(value)),
-                "$name: The user name $value is already exists")
-
-        rules
-            .add("email")
-            .isString()
-            .notEmpty()
-            .isEmail()
-        
-        rules
-            .add("password")
-            .isString()
-            .notEmpty()
-
-        rules
-            .add("confirmPassword")
-            .isString()
-            .notEmpty()
-            .compareWithField("password", "equal", 
-                "The password and the confirm password fields are not same")
-    }
-}
-```
-
-
-Create an instance is implemented by the SignUp interface and define the StateModel and the Validator instances
-```typescript
-const model = {
-    name: "User name",
-    email: "username@someexampleserver.com",
-    password: "password",
-    confirmPassword: "passw0rd"
+  name: string
+  email: string
+  password: string
+  confirmPassword: string
 }
 
 const stateModel = new StateModel<SignUp>()
-const validator = new SignUpValidator(stateModel)
-```
 
-Execute somewhere in a code
-```typescript
-async function validate() {
-    // For validate the whole model: await validator.validate(model) 
-    await validator.validateField(model, "confirmPassword")
-    console.log(stateModel.isValid) 
-    console.log(stateModel.getItem("confirmPassword")) 
+const validator = validatorFactory (stateModel, rules => {
+  rules.add("name").isString().notEmpty()
+    .checkAsync(async (_, __, value) => 
+    !(await userService.userExists(value)),
+      "$name: The user name $value is already exists")  
+  
+  rules.add("email").isString().notEmpty().isEmail()
+      
+  rules.add("password").isString().notEmpty()  
+  
+  rules.add("confirmPassword").isString().notEmpty()
+         .compareWithField("password", "equal", 
+          "The password and the confirm password fields are not same")
+})
+
+async function validate(signUp: SignUp) {
+  // For validate the whole data: await validator.validate(signUp) 
+  await validator.validateField(signUp, "confirmPassword")
+  console.log(stateModel.isValid) 
+  console.log(stateModel.getItem("confirmPassword")) 
 }
+
+validate({
+  name: "User name",
+  email: "username@someexampleserver.com",
+  password: "password",
+  confirmPassword: "passw0rd"
+})
 ```
 
 Output:
@@ -80,8 +50,8 @@ Output:
 false
 
 { 
-    "valid": false, 
-    "text": "The password and the confirm password fields are not same"
+  "valid": false, 
+  "text": "The password and the confirm password fields are not same"
 }
 ```
 

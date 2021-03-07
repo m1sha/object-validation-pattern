@@ -81,7 +81,7 @@ export class StringValidationBuilder<T, K extends keyof T> extends ValidationBui
   }
 
   maxLength(num: number, message?: string): this {
-    return this.check((_, __, value) => String(value).length <= num, message || `$name: isn't empty`)
+    return this.check((_, __, value) => String(value).length <= num, message || `$name: max length is ${num}`)
   }
 
   minLength(num: number, message?: string): this {

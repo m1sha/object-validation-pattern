@@ -14,13 +14,13 @@ export class ValidationQueue {
     this.names = []
   }
 
-  push(item: QueueItem): void {
+  enqueue(item: QueueItem): void {
     if (!this.items[item.key]) this.items[item.key] = []
     this.items[item.key].push(item)
     if (this.names.indexOf(item.key) === -1) this.names.push(item.key)
   }
 
-  pop(): { ruleName: string; items: QueueItem[] } {
+  dequeue(): { ruleName: string; items: QueueItem[] } {
     if (this.index >= Object.keys(this.items).length) {
       return undefined
     }

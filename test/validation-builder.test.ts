@@ -18,15 +18,15 @@ test('builder', () => {
   new NumberValidationBuilder('value', validationState).isPositive()
   new DateTimeValidationBuilder('date', validationState).fieldIs('date', 'equals', new Date())
 
-  let result = validationState.queue.pop()
+  let result = validationState.queue.dequeue()
   expect(result.items.length).toEqual(2)
 
-  result = validationState.queue.pop()
+  result = validationState.queue.dequeue()
   expect(result.items.length).toEqual(1)
 
-  result = validationState.queue.pop()
+  result = validationState.queue.dequeue()
   expect(result.items.length).toEqual(1)
 
-  result = validationState.queue.pop()
+  result = validationState.queue.dequeue()
   expect(result).toEqual(undefined)
 })

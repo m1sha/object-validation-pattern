@@ -39,7 +39,7 @@ export abstract class ObjectValidator<T> {
     this.validationState.target = obj
     this.validationState.queue.reset()
     while (true) {
-      const result = this.validationState.queue.pop()
+      const result = this.validationState.queue.dequeue()
       if (!result) {
         break
       }

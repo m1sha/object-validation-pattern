@@ -19,7 +19,7 @@ abstract class ValidationBuilder<T, K extends keyof T> {
   }
 
   check(action: ValidationCallback<T, K>, message: string): this {
-    this.validationState.queue.push(
+    this.validationState.queue.enqueue(
       new RuleQueueItem(
         this.fieldNameString(),
         () => {
@@ -34,7 +34,7 @@ abstract class ValidationBuilder<T, K extends keyof T> {
   }
 
   checkAsync(action: ValidationCallbackAsync<T, K>, message: string): this {
-    this.validationState.queue.push(
+    this.validationState.queue.enqueue(
       new RuleQueueItem(
         this.fieldNameString(),
         async () => {
@@ -57,12 +57,12 @@ abstract class ValidationBuilder<T, K extends keyof T> {
   }
 
   break(): this {
-    this.validationState.queue.push(new BlockQueueItem(this.fieldNameString(), true))
+    this.validationState.queue.enqueue(new BlockQueueItem(this.fieldNameString(), true))
     return this
   }
 
   breakChain(): this {
-    this.validationState.queue.push(new BlockQueueItem(this.fieldNameString(), false))
+    this.validationState.queue.enqueue(new BlockQueueItem(this.fieldNameString(), false))
     return this
   }
 }
